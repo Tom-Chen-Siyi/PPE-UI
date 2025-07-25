@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPE Video Annotation Viewer - Modular</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="left-panel" id="leftPanel">
+            <!-- X close button -->
+            <div class="panel-toggle">
+                <button id="closeLeftPanel" class="toggle-btn close-btn">✕</button>
+            </div>
+            
+            <div class="upload-section">
+                <div class="upload-group">
+                    <label for="videoUpload">Upload Video:</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="videoUpload" accept="video/*">
+                        <div class="file-input-display" id="videoFileDisplay">No file selected</div>
+                    </div>
+                    <button id="uploadVideoBtn" class="upload-btn">Upload Video</button>
+                    <div class="upload-progress" id="videoUploadProgress" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="videoProgressFill"></div>
+                        </div>
+                        <div class="progress-text" id="videoProgressText">Uploading...</div>
+                    </div>
+                </div>
+                <div class="upload-group">
+                    <label for="annotationsUpload">Upload Annotations (JSON):</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="annotationsUpload" accept=".json">
+                        <div class="file-input-display" id="annotationsFileDisplay">No file selected</div>
+                    </div>
+                    <button id="uploadAnnotationsBtn" class="upload-btn">Upload Annotations</button>
+                    <div class="upload-progress" id="annotationsUploadProgress" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="annotationsProgressFill"></div>
+                        </div>
+                        <div class="progress-text" id="annotationsProgressText">Uploading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File List Section -->
+            <div class="file-list-section">
+                <h3>Uploaded Files</h3>
+                <div class="file-controls">
+                    <button id="refreshFilesBtn" class="file-btn refresh-btn">Refresh Files</button>
+                    <button id="generateFramesBtn" class="file-btn generate-btn">Generate Frames</button>
+                    <button id="deleteFilesBtn" class="file-btn delete-btn">Delete Selected</button>
+                </div>
+                <div id="fileList"></div>
+            </div>
+        </div>
+
+        <!-- 中间视频区域 -->
+        <div class="center-panel">
+            <div class="video-section">
+                <div class="video-container">
+                    <video id="videoElement" style="display: none;" preload="metadata"></video>
+                    <canvas id="videoCanvas" width="1000" height="750"></canvas>
+                    <div class="video-overlay" id="videoOverlay"></div>
+                </div>
+
+                <!-- Canvas下方的控制区域 -->
+                <div class="canvas-controls-container" id="canvasControlsContainer">
+                    <div class="panel-toggle" style="position: absolute; top: 10px; right: 10px; z-index: 10;">
+                        <button id="toggleVideoControls" class="toggle-btn close-btn">✕</button>
+                    </div>
+                    <!-- Video Controls -->
+                    <div class="video-controls">
+                        <div class="progress-container">
+                            <input type="range" id="progressBar" min="0" max="100" value="0" class="progress-slider">
+                            <div id="timeLabel">00:00:00 / 00:00:00</div>
+                        </div>
+                        
+                        <div class="control-buttons">
+                            <button id="playBtn">Play/Pause</button>
+                            <label for="alertToggle" style="margin-left: 12px;">Alert:</label>
+                            <input type="checkbox" id="alertToggle">
+                            <label for="showAllBoxesToggle" style="margin-left: 12px;">Show All:</label>
+                            <input type="checkbox" id="showAllBoxesToggle">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧PPE详细栏 -->
+        <div class="right-panel" id="rightPanel">
+            <!-- X close button -->
+            <div class="panel-toggle">
+                <button id="closeRightPanel" class="toggle-btn close-btn">✕</button>
+            </div>
+            
+            <!-- PPE详细信息显示区域 -->
+            <div id="detailedInfoContainer" class="ppe-details-container">
+                <!-- 合规率显示 -->
+                <div class="compliance-rate">
+                    <div class="compliance-title">Compliance Rate</div>
+                    <div id="complianceRateDisplay" class="compliance-value">No data available</div>
+                </div>
+                
+                <!-- PPE不规范明细 -->
+                <div class="ppe-details">
+                    <div class="ppe-title">
+                        <span class="warning-icon">⚠️</span>
+                        <span>PPE Uncompliance Details</span>
+                    </div>
+                    <div id="ppeDetailsDisplay" class="ppe-content">
+                        Please select a frame to view the PPE non-compliance details
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 全局进度提示框 -->
+    <div id="globalProgressModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="progressTitle">Processing...</h3>
+            </div>
+            <div class="modal-body">
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="globalProgressFill"></div>
+                    </div>
+                    <div class="progress-text" id="globalProgressText">0%</div>
+                </div>
+                <div class="progress-details" id="progressDetails"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="iconPopup" style="display:none; position:absolute; z-index:1000; background:white; border:2px solid #ff6b6b; border-radius:10px; padding:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2); min-width:200px; text-align:center;"></div>
+
+
+    <button id="showLeftPanel" class="show-panel-btn " style="display: none;">▶</button>
+
+
+    <button id="showRightPanel" class="show-panel-btn " style="display: none;">◀</button>
+
+    <button id="showVideoControlsBtn" class="show-panel-btn">▲</button>
+
+
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/modules/VideoPlayer.js"></script>
+    <script src="js/modules/AnnotationRenderer.js"></script>
+    <script src="js/modules/FileManager.js"></script>
+    <script src="js/modules/UI.js"></script>
+    <script src="js/app_new.js"></script>
+</body>
+</html> 
