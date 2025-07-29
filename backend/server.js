@@ -22,6 +22,20 @@ app.get('/', (req, res) => {
   res.sendFile(require('path').join(__dirname, '..', 'public', 'index_new.html'));
 });
 
+/**
+ * Health check endpoint
+ * GET /health
+ */
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    version: require('../package.json').version
+  });
+});
+
 // ========================================
 // Server startup
 // ========================================

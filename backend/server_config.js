@@ -4,12 +4,19 @@ const path = require('path');
 const fs = require('fs-extra');
 const multer = require('multer');
 const ffmpeg = require('fluent-ffmpeg');
-const ffmpegPath = require('ffmpeg-static');
-const ffprobePath = require('ffprobe-static');
 
-// 设置 ffmpeg 路径
-ffmpeg.setFfmpegPath(ffmpegPath);
-ffmpeg.setFfprobePath(ffprobePath.path);
+// 在Docker环境中使用系统安装的ffmpeg，在开发环境中使用静态包
+if (process.env.NODE_ENV === 'production') {
+  // Docker环境：使用系统安装的ffmpeg
+  ffmpeg.setFfmpegPath('/usr/bin/ffmpeg');
+  ffmpeg.setFfprobePath('/usr/bin/ffprobe');
+} else {
+  // 开发环境：使用静态包
+  const ffmpegPath = require('ffmpeg-static');
+  const ffprobePath = require('ffprobe-static');
+  ffmpeg.setFfmpegPath(ffmpegPath);
+  ffmpeg.setFfprobePath(ffprobePath.path);
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
