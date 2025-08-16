@@ -337,30 +337,14 @@ class UI {
 
         // File management buttons
         const refreshBtn = document.getElementById('refreshFilesBtn');
-        const checkFrameStatusBtn = document.getElementById('checkFrameStatusBtn');
         const generateFramesBtn = document.getElementById('generateFramesBtn');
-        const deleteFilesBtn = document.getElementById('deleteFilesBtn');
         
         if (refreshBtn) {
             refreshBtn.addEventListener('click', () => this.viewer.fileManager.loadFileList());
         }
         
-        if (checkFrameStatusBtn) {
-            checkFrameStatusBtn.addEventListener('click', () => this.viewer.fileManager.checkCurrentVideoFrameStatus());
-        }
-        
         if (generateFramesBtn) {
             generateFramesBtn.addEventListener('click', () => this.viewer.fileManager.generateFramesForSelected());
-        }
-        
-        if (deleteFilesBtn) {
-            deleteFilesBtn.addEventListener('click', () => this.viewer.fileManager.deleteSelectedFiles());
-        }
-
-        // Annotation buttons
-        const loadJsonBtn = document.getElementById('loadJsonBtn');
-        if (loadJsonBtn) {
-            loadJsonBtn.addEventListener('click', () => this.loadNewJson());
         }
     }
 
@@ -532,6 +516,9 @@ class UI {
                 }
             }
             
+            // Update PPE compliance overview
+            this.updatePPEComplianceOverview();
+            
             // Update PPE non-compliance details
             const ppeDetailsDisplay = document.getElementById('ppeDetailsDisplay');
             if (ppeDetailsDisplay) {
@@ -573,6 +560,9 @@ class UI {
 
         // Update compliance rate display
         this.updateComplianceRate(boxes);
+        
+        // Update PPE compliance overview
+        this.updatePPEComplianceOverview();
         
         // Collect all person info for clicked icons
         const selectedPersons = [];
@@ -646,27 +636,119 @@ class UI {
                 const nonadherenceTexts = this.viewer.annotationRenderer.getNonadherenceTexts(person);
                 
                 if (nonadherenceTexts.length > 0) {
-                    detailsHTML += `<div style="margin-bottom: 12px; padding: 8px; background: #fff3cd; border-left: 3px solid #ffc107; border-radius: 4px;">`;
-                    detailsHTML += `<div style="margin-bottom: 6px; color: #333; font-weight: 600; font-size: 16px;">Member ID: ${person.id}</div>`;
+                    detailsHTML += `<div class="member-compliance-section">`;
+                    detailsHTML += `<div class="member-title">Member ID: ${person.id}</div>`;
+                    detailsHTML += `<div class="ppe-status-grid">`;
                     
-                    nonadherenceTexts.forEach(text => {
-                        detailsHTML += `<div style="margin: 3px 0; padding: 6px 10px; background: #ffebee; border-left: 3px solid #dc3545; border-radius: 3px; color: #dc3545; font-size: 16px; font-weight: 600; display: inline-block; margin-right: 8px; margin-bottom: 4px;">${text}</div>`;
-                    });
+                    // Create status cards only for non-compliant PPE types
+                    const ppeStatus = this.getPPEStatusForPerson(person);
                     
+                    // Only add cards for non-compliant items
+                    if (ppeStatus.mask.status !== 'compliant') {
+                        detailsHTML += this.createPPEStatusCard('mask', ppeStatus.mask, 'icon/mask.png');
+                    }
+                    
+                    if (ppeStatus.gloves.status !== 'compliant') {
+                        detailsHTML += this.createPPEStatusCard('gloves', ppeStatus.gloves, 'icon/gloves.png');
+                    }
+                    
+                    if (ppeStatus.gown.status !== 'compliant') {
+                        detailsHTML += this.createPPEStatusCard('gown', ppeStatus.gown, 'icon/gown.png');
+                    }
+                    
+                    if (ppeStatus.eyewear.status !== 'compliant') {
+                        detailsHTML += this.createPPEStatusCard('eyewear', ppeStatus.eyewear, 'icon/eyewear.png');
+                    }
+                    
+                    detailsHTML += `</div>`;
                     detailsHTML += `</div>`;
                 } else {
-                    detailsHTML += `<div style="margin-bottom: 12px; padding: 8px; background: #d4edda; border-left: 3px solid #28a745; border-radius: 4px;">`;
-                    detailsHTML += `<div style="margin-bottom: 6px; color: #333; font-weight: 600; font-size: 16px;">Member ID: ${person.id}</div>`;
-                    detailsHTML += `<div style="color: #28a745; font-size: 16px; font-weight: 600;">✅ All PPE items properly worn</div>`;
+                    detailsHTML += `<div class="member-compliance-section compliant">`;
+                    detailsHTML += `<div class="member-title">Member ID: ${person.id}</div>`;
+                    detailsHTML += `<div class="all-compliant-message">✅ All PPE items properly worn</div>`;
                     detailsHTML += `</div>`;
-            }
+                }
             });
             
             ppeDetailsDisplay.innerHTML = detailsHTML;
         }
     }
 
+    /**
+     * Get PPE status for a specific person
+     */
+    getPPEStatusForPerson(person) {
+        const status = {
+            mask: { status: 'compliant', text: 'Mask Proper' },
+            gloves: { status: 'compliant', text: 'Gloves Proper' },
+            gown: { status: 'compliant', text: 'Gown Proper' },
+            eyewear: { status: 'compliant', text: 'Eyewear Proper' }
+        };
+        
+        if (person.classTypes) {
+            person.classTypes.forEach(classType => {
+                switch (classType) {
+                    case 'ma':
+                        status.mask = { status: 'absent', text: 'Mask Absent' };
+                        break;
+                    case 'mi':
+                        status.mask = { status: 'incomplete', text: 'Mask Incomplete' };
+                        break;
+                    case 'rc':
+                        status.mask = { status: 'absent', text: 'Mask Removed' };
+                        break;
+                    case 'ha':
+                        status.gloves = { status: 'absent', text: 'Gloves Absent' };
+                        break;
+                    case 'ga':
+                        status.gown = { status: 'absent', text: 'Gown Absent' };
+                        break;
+                    case 'gi':
+                        status.gown = { status: 'incomplete', text: 'Gown Incomplete' };
+                        break;
+                    case 'ea':
+                        status.eyewear = { status: 'absent', text: 'Eyewear Absent' };
+                        break;
+                }
+            });
+        }
+        
+        return status;
+    }
 
+    /**
+     * Create PPE status card
+     */
+    createPPEStatusCard(ppeType, status, iconPath) {
+        let backgroundColor, textColor;
+        
+        switch (status.status) {
+            case 'absent':
+                backgroundColor = '#dc3545'; // Red
+                textColor = 'white';
+                break;
+            case 'incomplete':
+                backgroundColor = '#ffc107'; // Yellow
+                textColor = '#333';
+                break;
+            case 'compliant':
+                backgroundColor = '#28a745'; // Green
+                textColor = 'white';
+                break;
+            default:
+                backgroundColor = '#6c757d'; // Gray
+                textColor = 'white';
+        }
+        
+        return `
+            <div class="ppe-status-card" style="background-color: ${backgroundColor}; color: ${textColor};">
+                <div class="ppe-status-icon">
+                    <img src="${iconPath}" alt="${ppeType}" class="ppe-status-icon-img">
+                </div>
+                <div class="ppe-status-text">${status.text}</div>
+            </div>
+        `;
+    }
 
     /**
      * Show compliance info (deprecated, replaced by updateMultiPersonPPEInfo)
@@ -1063,6 +1145,71 @@ class UI {
                 await this.viewer.displayCurrentFrame();
             }
         }, 100);
+    }
+
+    /**
+     * Update PPE compliance overview
+     */
+    updatePPEComplianceOverview() {
+        const boxes = this.viewer.annotationRenderer.getCurrentFrameAnnotations();
+        
+        // Initialize counters
+        let maskTotal = 0;
+        let maskCompliant = 0;
+        let glovesTotal = 0;
+        let glovesCompliant = 0;
+        let eyewearTotal = 0;
+        let eyewearCompliant = 0;
+        let gownTotal = 0;
+        let gownCompliant = 0;
+        
+        // Count PPE compliance for each person
+        boxes.forEach(box => {
+            // Count masks
+            maskTotal++;
+            if (!box.classTypes || (!box.classTypes.includes('ma') && !box.classTypes.includes('mi') && !box.classTypes.includes('rc'))) {
+                maskCompliant++;
+            }
+            
+            // Count gloves
+            glovesTotal++;
+            if (!box.classTypes || !box.classTypes.includes('ha')) {
+                glovesCompliant++;
+            }
+            
+            // Count eyewear
+            eyewearTotal++;
+            if (!box.classTypes || !box.classTypes.includes('ea')) {
+                eyewearCompliant++;
+            }
+            
+            // Count gowns
+            gownTotal++;
+            if (!box.classTypes || (!box.classTypes.includes('ga') && !box.classTypes.includes('gi'))) {
+                gownCompliant++;
+            }
+        });
+        
+        // Update display
+        this.updateOverviewCard('maskCard', maskCompliant, maskTotal);
+        this.updateOverviewCard('glovesCard', glovesCompliant, glovesTotal);
+        this.updateOverviewCard('eyewearCard', eyewearCompliant, eyewearTotal);
+        this.updateOverviewCard('gownCard', gownCompliant, gownTotal);
+    }
+
+    /**
+     * Update individual overview card
+     */
+    updateOverviewCard(cardId, compliant, total) {
+        const card = document.getElementById(cardId);
+        const countElement = document.getElementById(cardId.replace('Card', 'Compliant'));
+        
+        if (card && countElement) {
+            countElement.textContent = `${compliant}/${total}`;
+            
+            // Keep blue background as requested
+            card.style.background = '#007bff';
+        }
     }
 
     // ========================================

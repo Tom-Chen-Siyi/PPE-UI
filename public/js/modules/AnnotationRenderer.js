@@ -699,6 +699,11 @@ class AnnotationRenderer {
             if (complianceRateDisplay) {
                 complianceRateDisplay.textContent = `${adherenceRate}% (${totalBoxes - nonadherenceCount}/${totalBoxes})`;
             }
+            
+            // Update PPE compliance overview
+            if (this.viewer.ui) {
+                this.viewer.ui.updatePPEComplianceOverview();
+            }
         } else {
             this.viewer.updateInfoLabel('No PPE detected in this frame');
             
@@ -706,6 +711,11 @@ class AnnotationRenderer {
             const complianceRateDisplay = document.getElementById('complianceRateDisplay');
             if (complianceRateDisplay) {
                 complianceRateDisplay.textContent = 'No data available';
+            }
+            
+            // Update PPE compliance overview
+            if (this.viewer.ui) {
+                this.viewer.ui.updatePPEComplianceOverview();
             }
         }
     }
@@ -780,6 +790,23 @@ class AnnotationRenderer {
      */
     clearActiveAlertBox() {
         this.activeAlertBox = null;
+    }
+
+    /**
+     * Clear annotations
+     */
+    clearAnnotations() {
+        this.annotations = null;
+        this.currentFrameAnnotations = [];
+        this.clickedExclamationIcons.clear();
+        
+        // Clear canvas annotations
+        const canvas = document.getElementById('videoCanvas');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            // Redraw current frame without annotations
+            this.viewer.videoPlayer.drawCurrentFrame();
+        }
     }
 }
 

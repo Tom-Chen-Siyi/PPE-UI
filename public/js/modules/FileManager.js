@@ -190,13 +190,21 @@ class FileManager {
      * Display file list
      */
     displayFileList(files) {
-        const fileList = document.getElementById('fileList');
-        if (!fileList) return;
+        const videoFileList = document.getElementById('videoFileList');
+        const annotationFileList = document.getElementById('annotationFileList');
+        
+        if (!videoFileList || !annotationFileList) {
+            console.error('File list containers not found');
+            return;
+        }
 
-        fileList.innerHTML = '';
+        // Clear existing lists
+        videoFileList.innerHTML = '';
+        annotationFileList.innerHTML = '';
 
         if (files.length === 0) {
-            fileList.innerHTML = '<div class="no-files">No files uploaded yet</div>';
+            videoFileList.innerHTML = '<div class="no-files">No video files uploaded</div>';
+            annotationFileList.innerHTML = '<div class="no-files">No annotation files uploaded</div>';
             return;
         }
 
@@ -206,30 +214,22 @@ class FileManager {
 
         // Display video files
         if (videoFiles.length > 0) {
-            const videoSection = document.createElement('div');
-            videoSection.className = 'file-section';
-            videoSection.innerHTML = '<h3>Video Files</h3>';
-            
             videoFiles.forEach(file => {
                 const fileItem = this.createFileItem(file, 'video');
-                videoSection.appendChild(fileItem);
+                videoFileList.appendChild(fileItem);
             });
-            
-            fileList.appendChild(videoSection);
+        } else {
+            videoFileList.innerHTML = '<div class="no-files">No video files uploaded</div>';
         }
 
         // Display annotation files
         if (annotationFiles.length > 0) {
-            const annotationSection = document.createElement('div');
-            annotationSection.className = 'file-section';
-            annotationSection.innerHTML = '<h3>Annotation Files</h3>';
-            
             annotationFiles.forEach(file => {
                 const fileItem = this.createFileItem(file, 'annotation');
-                annotationSection.appendChild(fileItem);
+                annotationFileList.appendChild(fileItem);
             });
-            
-            fileList.appendChild(annotationSection);
+        } else {
+            annotationFileList.innerHTML = '<div class="no-files">No annotation files uploaded</div>';
         }
     }
 
@@ -241,6 +241,24 @@ class FileManager {
         fileItem.className = 'file-item';
         fileItem.dataset.filename = file.filename;
         fileItem.dataset.type = type;
+
+        // Create delete button with image icon
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'file-delete-btn';
+        deleteBtn.title = 'Delete file';
+        
+        // Create image element for delete icon
+        const deleteIcon = document.createElement('img');
+        deleteIcon.src = 'icon/delete_icon.png';
+        deleteIcon.alt = 'Delete';
+        deleteIcon.className = 'delete-icon-img';
+        deleteBtn.appendChild(deleteIcon);
+        
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent file selection
+            this.deleteSingleFile(file.filename, file.filename);
+        });
+        fileItem.appendChild(deleteBtn);
 
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
@@ -257,14 +275,24 @@ class FileManager {
 
         const fileDetails = document.createElement('div');
         fileDetails.className = 'file-details';
-        fileDetails.textContent = `${window.PPE_UTILS.formatFileSize(file.size)} • ${new Date(file.modified).toLocaleString()}`;
+        let detailsText = `${window.PPE_UTILS.formatFileSize(file.size)} • ${new Date(file.modified).toLocaleString()}`;
+        
+        // Add video info if available
+        if (type === 'video' && file.videoInfo) {
+            const { totalFrames, fps, duration } = file.videoInfo;
+            if (totalFrames > 0) {
+                detailsText += ` • ${totalFrames} frames (${fps} fps, ${duration}s)`;
+            }
+        }
+        
+        fileDetails.textContent = detailsText;
         fileInfo.appendChild(fileDetails);
 
         fileItem.appendChild(fileInfo);
 
         // Add click event
         fileItem.addEventListener('click', (e) => {
-            if (e.target.type !== 'checkbox') {
+            if (e.target.type !== 'checkbox' && !e.target.classList.contains('file-delete-btn') && !e.target.classList.contains('delete-icon-img')) {
                 this.handleFileClick(file, type);
             }
         });
@@ -608,6 +636,44 @@ class FileManager {
         } catch (error) {
             console.error('Error deleting file:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Delete a single file with confirmation
+     */
+    async deleteSingleFile(filename, displayName) {
+        if (!confirm(`Are you sure you want to delete "${displayName}"?`)) {
+            return;
+        }
+
+        try {
+            await this.deleteFile(filename);
+            
+            // Reload file list to reflect changes
+            await this.loadFileList();
+            
+            // If the deleted file was currently loaded, clear the current selection
+            if (this.currentVideoFilename === filename) {
+                this.currentVideoFilename = null;
+                // Clear video display
+                this.viewer.videoPlayer.clearVideo();
+            }
+            
+            if (this.currentAnnotationsFilename === filename) {
+                this.currentAnnotationsFilename = null;
+                // Clear annotations
+                this.viewer.annotationRenderer.clearAnnotations();
+            }
+            
+            // Redraw current frame
+            await this.viewer.displayCurrentFrame();
+            
+            console.log('File deleted successfully:', filename);
+            
+        } catch (error) {
+            console.error('Error deleting file:', error);
+            alert('Failed to delete file: ' + error.message);
         }
     }
 

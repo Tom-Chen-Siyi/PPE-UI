@@ -28,7 +28,14 @@
                         </div>
                         <div class="progress-text" id="videoProgressText">Uploading...</div>
                     </div>
+                    
+                    <!-- Video Files List -->
+                    <div class="file-list-section">
+                        <h4>Video Files</h4>
+                        <div id="videoFileList" class="file-list"></div>
+                    </div>
                 </div>
+                
                 <div class="upload-group">
                     <label for="annotationsUpload">Upload Annotations (JSON):</label>
                     <div class="file-input-wrapper">
@@ -42,18 +49,19 @@
                         </div>
                         <div class="progress-text" id="annotationsProgressText">Uploading...</div>
                     </div>
+                    
+                    <!-- Annotation Files List -->
+                    <div class="file-list-section">
+                        <h4>Annotation Files</h4>
+                        <div id="annotationFileList" class="file-list"></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- File List Section -->
-            <div class="file-list-section">
-                <h3>Uploaded Files</h3>
-                <div class="file-controls">
-                    <button id="refreshFilesBtn" class="file-btn refresh-btn">Refresh Files</button>
-                    <button id="generateFramesBtn" class="file-btn generate-btn">Generate Frames</button>
-                    <button id="deleteFilesBtn" class="file-btn delete-btn">Delete Selected</button>
-                </div>
-                <div id="fileList"></div>
+            <!-- Control Buttons at Bottom -->
+            <div class="control-buttons-section">
+                <button id="refreshFilesBtn" class="file-btn refresh-btn">Refresh Files</button>
+                <button id="generateFramesBtn" class="file-btn generate-btn">Generate Frames</button>
             </div>
         </div>
 
@@ -99,6 +107,49 @@
             
             <!-- PPE详细信息显示区域 -->
             <div id="detailedInfoContainer" class="ppe-details-container">
+                <!-- PPE Compliance Overview -->
+                <div class="ppe-overview">
+                    <div class="overview-title">PPE Compliance Overview</div>
+                    <div class="overview-grid">
+                        <div class="overview-card" id="maskCard">
+                            <div class="overview-icon">
+                                <img src="icon/mask.png" alt="Mask" class="ppe-icon">
+                            </div>
+                            <div class="overview-text">
+                                <span id="maskCompliant">0/0</span>
+                                <span class="overview-label">Compliant</span>
+                            </div>
+                        </div>
+                        <div class="overview-card" id="glovesCard">
+                            <div class="overview-icon">
+                                <img src="icon/gloves.png" alt="Gloves" class="ppe-icon">
+                            </div>
+                            <div class="overview-text">
+                                <span id="glovesCompliant">0/0</span>
+                                <span class="overview-label">Compliant</span>
+                            </div>
+                        </div>
+                        <div class="overview-card" id="eyewearCard">
+                            <div class="overview-icon">
+                                <img src="icon/eyewear.png" alt="Eyewear" class="ppe-icon">
+                            </div>
+                            <div class="overview-text">
+                                <span id="eyewearCompliant">0/0</span>
+                                <span class="overview-label">Compliant</span>
+                            </div>
+                        </div>
+                        <div class="overview-card" id="gownCard">
+                            <div class="overview-icon">
+                                <img src="icon/gown.png" alt="Gown" class="ppe-icon">
+                            </div>
+                            <div class="overview-text">
+                                <span id="gownCompliant">0/0</span>
+                                <span class="overview-label">Compliant</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- 合规率显示 -->
                 <div class="compliance-rate">
                     <div class="compliance-title">Compliance Rate</div>
@@ -108,8 +159,7 @@
                 <!-- PPE不规范明细 -->
                 <div class="ppe-details">
                     <div class="ppe-title">
-                        <span class="warning-icon">⚠️</span>
-                        <span>PPE Uncompliance Details</span>
+                        <span>PPE Compliance by Provider</span>
                     </div>
                     <div id="ppeDetailsDisplay" class="ppe-content">
                         Please select a frame to view the PPE non-compliance details

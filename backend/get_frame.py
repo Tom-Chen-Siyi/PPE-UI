@@ -23,9 +23,9 @@ def extract_frames(video_path, output_dir, every_n=1):
         return 0
     
     # Get video information
-    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    duration = total_frames / fps if fps > 0 else 0
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) #视频总帧数
+    fps = cap.get(cv2.CAP_PROP_FPS) #视频帧率
+    duration = total_frames / fps if fps > 0 else 0 #视频时长
     
     print(f"Video info: {total_frames} frames, {fps:.2f} fps, {duration:.2f} seconds")
     
@@ -34,7 +34,7 @@ def extract_frames(video_path, output_dir, every_n=1):
     last_progress = 0
     
     while True:
-        ret, frame = cap.read()
+        ret, frame = cap.read() #读取视频帧
         if not ret:
             break
             

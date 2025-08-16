@@ -450,6 +450,37 @@ class VideoPlayer {
     getFrameCache() {
         return this.frameCache;
     }
+
+    /**
+     * Clear video
+     */
+    clearVideo() {
+        this.currentVideo = null;
+        this.currentFrame = 0;
+        this.totalFrames = 0;
+        this.fps = 0;
+        this.duration = 0;
+        this.frameCache.clear();
+        
+        // Clear canvas
+        const canvas = document.getElementById('videoCanvas');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        // Reset progress bar
+        const progressBar = document.getElementById('progressBar');
+        if (progressBar) {
+            progressBar.value = 0;
+        }
+        
+        // Update time display
+        const timeDisplay = document.getElementById('timeDisplay');
+        if (timeDisplay) {
+            timeDisplay.textContent = '00:00 / 00:00';
+        }
+    }
 }
 
 // 导出模块
