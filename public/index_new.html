@@ -16,12 +16,22 @@
             
             <div class="upload-section">
                 <div class="upload-group">
-                    <label for="videoUpload">Upload Video:</label>
-                    <div class="file-input-wrapper">
-                        <input type="file" id="videoUpload" accept="video/*">
-                        <div class="file-input-display" id="videoFileDisplay">No file selected</div>
+                    <h3 class="upload-title">Upload Media</h3>
+                    <p class="upload-subtitle">Add your video file here</p>
+                    
+                    <div class="drag-drop-zone" id="videoDragZone" data-type="video">
+                        <div class="drag-drop-content">
+                            <div class="drag-drop-text">Drag your file(s) to start uploading</div>
+                            <div class="upload-divider">
+                                <span class="divider-text">OR</span>
+                            </div>
+                            <button class="browse-btn" id="videoBrowseBtn">Browse files</button>
+                        </div>
+                        <input type="file" id="videoUpload" accept="video/*" style="display: none;">
                     </div>
-                    <button id="uploadVideoBtn" class="upload-btn">Upload Video</button>
+                    
+                    <p class="file-type-info">Only supports .mp4 or .mov files</p>
+                    
                     <div class="upload-progress" id="videoUploadProgress" style="display: none;">
                         <div class="progress-bar">
                             <div class="progress-fill" id="videoProgressFill"></div>
@@ -37,12 +47,22 @@
                 </div>
                 
                 <div class="upload-group">
-                    <label for="annotationsUpload">Upload Annotations (JSON):</label>
-                    <div class="file-input-wrapper">
-                        <input type="file" id="annotationsUpload" accept=".json">
-                        <div class="file-input-display" id="annotationsFileDisplay">No file selected</div>
+                    <h3 class="upload-title">Upload Annotation</h3>
+                    <p class="upload-subtitle">Add your annotation file here</p>
+                    
+                    <div class="drag-drop-zone" id="annotationDragZone" data-type="annotations">
+                        <div class="drag-drop-content">
+                            <div class="drag-drop-text">Drag your file(s) to start uploading</div>
+                            <div class="upload-divider">
+                                <span class="divider-text">OR</span>
+                            </div>
+                            <button class="browse-btn" id="annotationBrowseBtn">Browse files</button>
+                        </div>
+                        <input type="file" id="annotationsUpload" accept=".json" style="display: none;">
                     </div>
-                    <button id="uploadAnnotationsBtn" class="upload-btn">Upload Annotations</button>
+                    
+                    <p class="file-type-info">Only supports JSON files</p>
+                    
                     <div class="upload-progress" id="annotationsUploadProgress" style="display: none;">
                         <div class="progress-bar">
                             <div class="progress-fill" id="annotationsProgressFill"></div>
@@ -68,6 +88,31 @@
         <!-- 中间视频区域 -->
         <div class="center-panel">
             <div class="video-section">
+                <!-- Canvas上方的控制区域 -->
+                <div class="canvas-top-controls">
+                    <div class="toggle-control">
+                        <label for="alertToggle">Detect PPE Non Compliance:</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="alertToggle" class="toggle-input">
+                            <label for="alertToggle" class="toggle-label"></label>
+                        </div>
+                    </div>
+                    <div class="toggle-control">
+                        <label for="non-compliance-metrics">PPE Non Compliance Metrics:</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="non-compliance-metrics" class="toggle-input">
+                            <label for="non-compliance-metrics" class="toggle-label"></label>
+                        </div>
+                    </div>
+                    <div class="toggle-control">
+                        <label for="showAllBoxesToggle">Show All:</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="showAllBoxesToggle" class="toggle-input">
+                            <label for="showAllBoxesToggle" class="toggle-label"></label>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="video-container">
                     <video id="videoElement" style="display: none;" preload="metadata"></video>
                     <canvas id="videoCanvas" width="1000" height="750"></canvas>
@@ -81,17 +126,23 @@
                     </div>
                     <!-- Video Controls -->
                     <div class="video-controls">
-                        <div class="progress-container">
-                            <input type="range" id="progressBar" min="0" max="100" value="0" class="progress-slider">
-                            <div id="timeLabel">00:00:00 / 00:00:00</div>
-                        </div>
-                        
-                        <div class="control-buttons">
-                            <button id="playBtn">Play/Pause</button>
-                            <label for="alertToggle" style="margin-left: 12px;">Alert:</label>
-                            <input type="checkbox" id="alertToggle">
-                            <label for="showAllBoxesToggle" style="margin-left: 12px;">Show All:</label>
-                            <input type="checkbox" id="showAllBoxesToggle">
+                        <div class="media-controls-bar">
+                            <button id="playBtn" class="play-pause-btn">
+                                <img src="icon/play icon.png" alt="Play" id="playIcon" class="play-icon">
+                                <img src="icon/pause icon.png" alt="Pause" id="pauseIcon" class="pause-icon" style="display: none;">
+                            </button>
+                            
+                            <div class="progress-section">
+                                <div class="time-display">
+                                    <span id="currentTime">00:00</span>
+                                </div>
+                                <div class="progress-container">
+                                    <input type="range" id="progressBar" min="0" max="100" value="0" class="progress-slider">
+                                </div>
+                                <div class="time-display">
+                                    <span id="totalTime">00:00</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

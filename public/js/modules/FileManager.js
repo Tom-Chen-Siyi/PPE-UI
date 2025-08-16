@@ -242,7 +242,59 @@ class FileManager {
         fileItem.dataset.filename = file.filename;
         fileItem.dataset.type = type;
 
-        // Create delete button with image icon
+        // Create file icon based on type
+        const fileIcon = document.createElement('img');
+        fileIcon.className = 'file-type-icon';
+        if (type === 'video') {
+            fileIcon.src = 'icon/video upload icon.png';
+            fileIcon.alt = 'Video';
+        } else if (type === 'annotation') {
+            fileIcon.src = 'icon/transcript icon.png';
+            fileIcon.alt = 'Annotation';
+        }
+        fileItem.appendChild(fileIcon);
+
+        const fileInfo = document.createElement('div');
+        fileInfo.className = 'file-info';
+        
+        const fileName = document.createElement('div');
+        fileName.className = 'file-name';
+        fileName.textContent = file.filename;
+        fileInfo.appendChild(fileName);
+
+        const fileDetails = document.createElement('div');
+        fileDetails.className = 'file-details';
+        
+        // Create file size element
+        const fileSize = document.createElement('span');
+        fileSize.className = 'file-size';
+        fileSize.textContent = window.PPE_UTILS.formatFileSize(file.size);
+        fileDetails.appendChild(fileSize);
+        
+        // Add frame info for video files only
+        if (type === 'video' && file.videoInfo) {
+            const { totalFrames } = file.videoInfo;
+            if (totalFrames > 0) {
+                const frameInfo = document.createElement('span');
+                frameInfo.className = 'frame-info';
+                frameInfo.textContent = ` • ${totalFrames} Frames generated`;
+                fileDetails.appendChild(frameInfo);
+            }
+        }
+        
+        fileInfo.appendChild(fileDetails);
+
+        fileItem.appendChild(fileInfo);
+
+        // Add checkbox only for video files
+        if (type === 'video') {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'file-checkbox';
+            fileItem.appendChild(checkbox);
+        }
+
+        // Create delete button with icon
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'file-delete-btn';
         deleteBtn.title = 'Delete file';
@@ -259,36 +311,6 @@ class FileManager {
             this.deleteSingleFile(file.filename, file.filename);
         });
         fileItem.appendChild(deleteBtn);
-
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'file-checkbox';
-        fileItem.appendChild(checkbox);
-
-        const fileInfo = document.createElement('div');
-        fileInfo.className = 'file-info';
-        
-        const fileName = document.createElement('div');
-        fileName.className = 'file-name';
-        fileName.textContent = file.filename;
-        fileInfo.appendChild(fileName);
-
-        const fileDetails = document.createElement('div');
-        fileDetails.className = 'file-details';
-        let detailsText = `${window.PPE_UTILS.formatFileSize(file.size)} • ${new Date(file.modified).toLocaleString()}`;
-        
-        // Add video info if available
-        if (type === 'video' && file.videoInfo) {
-            const { totalFrames, fps, duration } = file.videoInfo;
-            if (totalFrames > 0) {
-                detailsText += ` • ${totalFrames} frames (${fps} fps, ${duration}s)`;
-            }
-        }
-        
-        fileDetails.textContent = detailsText;
-        fileInfo.appendChild(fileDetails);
-
-        fileItem.appendChild(fileInfo);
 
         // Add click event
         fileItem.addEventListener('click', (e) => {
@@ -381,13 +403,13 @@ class FileManager {
                 statusIndicator.className = 'frame-status';
                 
                 if (data.completed) {
-                    statusIndicator.textContent = `✅ ${data.frameCount} frames`;
+                    statusIndicator.textContent = ` ${data.frameCount} frames`;
                     statusIndicator.style.color = '#4CAF50';
                 } else if (data.frameCount > 0) {
-                    statusIndicator.textContent = `⏳ ${data.frameCount} frames`;
+                    statusIndicator.textContent = `⏳${data.frameCount} frames`;
                     statusIndicator.style.color = '#FF9800';
                 } else {
-                    statusIndicator.textContent = '❌ No frames';
+                    statusIndicator.textContent = ' No frames';
                     statusIndicator.style.color = '#F44336';
                 }
                 

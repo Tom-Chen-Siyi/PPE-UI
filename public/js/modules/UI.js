@@ -106,6 +106,19 @@ class UI {
             });
         }
 
+        // PPE Non Compliance Metrics toggle
+        const nonComplianceMetricsToggle = document.getElementById('non-compliance-metrics');
+        if (nonComplianceMetricsToggle) {
+            // Set initial state to false (off)
+            nonComplianceMetricsToggle.checked = false;
+            nonComplianceMetricsToggle.addEventListener('change', async (e) => {
+                // TODO: Implement PPE Non Compliance Metrics functionality
+                console.log(`PPE Non Compliance Metrics ${e.target.checked ? 'enabled' : 'disabled'}`);
+                // Placeholder for future implementation
+                // This function will be implemented when the specific functionality is defined
+            });
+        }
+
         // Adaptive playback toggle
         const adaptivePlaybackToggle = document.getElementById('adaptivePlaybackToggle');
         if (adaptivePlaybackToggle) {
@@ -120,6 +133,9 @@ class UI {
 
         // File input change events
         this.initializeFileInputListeners();
+
+        // Drag and drop events
+        this.initializeDragAndDrop();
 
         // Button events
         this.initializeButtonListeners();
@@ -289,32 +305,41 @@ class UI {
     initializeFileInputListeners() {
         const videoUpload = document.getElementById('videoUpload');
         const annotationsUpload = document.getElementById('annotationsUpload');
-        const videoFileDisplay = document.getElementById('videoFileDisplay');
-        const annotationsFileDisplay = document.getElementById('annotationsFileDisplay');
+        const videoBrowseBtn = document.getElementById('videoBrowseBtn');
+        const annotationBrowseBtn = document.getElementById('annotationBrowseBtn');
 
-        if (videoUpload && videoFileDisplay) {
+        if (videoUpload) {
             videoUpload.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                    videoFileDisplay.textContent = file.name;
-                    videoFileDisplay.classList.add('has-file');
-                } else {
-                    videoFileDisplay.textContent = 'No file selected';
-                    videoFileDisplay.classList.remove('has-file');
+                    console.log('Video file selected:', file.name);
+                    // Directly trigger video upload
+                    this.viewer.fileManager.uploadVideo();
                 }
             });
         }
 
-        if (annotationsUpload && annotationsFileDisplay) {
+        if (annotationsUpload) {
             annotationsUpload.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                    annotationsFileDisplay.textContent = file.name;
-                    annotationsFileDisplay.classList.add('has-file');
-                } else {
-                    annotationsFileDisplay.textContent = 'No file selected';
-                    annotationsFileDisplay.classList.remove('has-file');
+                    console.log('Annotation file selected:', file.name);
+                    // Directly trigger annotations upload
+                    this.viewer.fileManager.uploadAnnotations();
                 }
+            });
+        }
+
+        // Browse button event listeners
+        if (videoBrowseBtn && videoUpload) {
+            videoBrowseBtn.addEventListener('click', () => {
+                videoUpload.click();
+            });
+        }
+
+        if (annotationBrowseBtn && annotationsUpload) {
+            annotationBrowseBtn.addEventListener('click', () => {
+                annotationsUpload.click();
             });
         }
     }
@@ -323,18 +348,6 @@ class UI {
      * Initialize button listeners
      */
     initializeButtonListeners() {
-        // Upload buttons
-        const uploadVideoBtn = document.getElementById('uploadVideoBtn');
-        const uploadAnnotationsBtn = document.getElementById('uploadAnnotationsBtn');
-        
-        if (uploadVideoBtn) {
-            uploadVideoBtn.addEventListener('click', () => this.viewer.fileManager.uploadVideo());
-        }
-        
-        if (uploadAnnotationsBtn) {
-            uploadAnnotationsBtn.addEventListener('click', () => this.viewer.fileManager.uploadAnnotations());
-        }
-
         // File management buttons
         const refreshBtn = document.getElementById('refreshFilesBtn');
         const generateFramesBtn = document.getElementById('generateFramesBtn');
@@ -355,6 +368,110 @@ class UI {
         this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
         this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
+    }
+
+    /**
+     * Initialize drag and drop functionality
+     */
+    initializeDragAndDrop() {
+        console.log('Initializing drag and drop...');
+        
+        // Video upload drag and drop
+        const videoDragZone = document.querySelector('.drag-drop-zone[data-type="video"]');
+        const videoUpload = document.getElementById('videoUpload');
+        
+        if (videoDragZone && videoUpload) {
+            console.log('Setting up video drag and drop');
+            this.setupDragAndDrop(videoDragZone, videoUpload, 'video');
+        } else {
+            console.warn('Video drag zone or upload input not found');
+        }
+
+        // Annotations upload drag and drop
+        const annotationsDragZone = document.querySelector('.drag-drop-zone[data-type="annotations"]');
+        const annotationsUpload = document.getElementById('annotationsUpload');
+        
+        if (annotationsDragZone && annotationsUpload) {
+            console.log('Setting up annotations drag and drop');
+            this.setupDragAndDrop(annotationsDragZone, annotationsUpload, 'annotations');
+        } else {
+            console.warn('Annotations drag zone or upload input not found');
+        }
+    }
+
+    /**
+     * Setup drag and drop for a specific zone
+     */
+    setupDragAndDrop(dragZone, fileInput, type) {
+        // Prevent default drag behaviors
+        dragZone.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        dragZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dragZone.classList.add('dragover');
+        });
+
+        dragZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Only remove dragover class if we're leaving the zone entirely
+            if (!dragZone.contains(e.relatedTarget)) {
+                dragZone.classList.remove('dragover');
+            }
+        });
+
+        dragZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dragZone.classList.remove('dragover');
+            
+            console.log('File dropped on', type, 'zone');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                console.log('Dropped file:', file.name, 'Type:', file.type);
+                
+                // Check file type
+                if (type === 'video' && this.isVideoFile(file.name)) {
+                    console.log('Valid video file dropped, starting upload...');
+                    fileInput.files = files;
+                    fileInput.dispatchEvent(new Event('change'));
+                } else if (type === 'annotations' && this.isAnnotationFile(file.name)) {
+                    console.log('Valid annotation file dropped, starting upload...');
+                    fileInput.files = files;
+                    fileInput.dispatchEvent(new Event('change'));
+                } else {
+                    console.warn('Invalid file type dropped');
+                    alert(`Please select a valid ${type === 'video' ? 'video' : 'annotation'} file`);
+                }
+            }
+        });
+    }
+
+    /**
+     * Check if file is a video file
+     */
+    isVideoFile(filename) {
+        const ext = filename.split('.').pop().toLowerCase();
+        const videoExtensions = ['mp4', 'avi', 'mov', 'mkv', 'wmv', 'flv'];
+        const isValid = videoExtensions.includes(ext);
+        console.log('Video file check:', filename, 'Extension:', ext, 'Valid:', isValid);
+        return isValid;
+    }
+
+    /**
+     * Check if file is an annotation file
+     */
+    isAnnotationFile(filename) {
+        const ext = filename.split('.').pop().toLowerCase();
+        const isValid = ext === 'json';
+        console.log('Annotation file check:', filename, 'Extension:', ext, 'Valid:', isValid);
+        return isValid;
     }
 
     // ========================================
@@ -662,12 +779,7 @@ class UI {
                     
                     detailsHTML += `</div>`;
                     detailsHTML += `</div>`;
-                } else {
-                    detailsHTML += `<div class="member-compliance-section compliant">`;
-                    detailsHTML += `<div class="member-title">Member ID: ${person.id}</div>`;
-                    detailsHTML += `<div class="all-compliant-message">✅ All PPE items properly worn</div>`;
-                    detailsHTML += `</div>`;
-                }
+                } 
             });
             
             ppeDetailsDisplay.innerHTML = detailsHTML;
@@ -688,26 +800,32 @@ class UI {
         if (person.classTypes) {
             person.classTypes.forEach(classType => {
                 switch (classType) {
+                    // Mask classifications
                     case 'ma':
                         status.mask = { status: 'absent', text: 'Mask Absent' };
                         break;
                     case 'mi':
                         status.mask = { status: 'incomplete', text: 'Mask Incomplete' };
                         break;
-                    case 'rc':
-                        status.mask = { status: 'absent', text: 'Mask Removed' };
-                        break;
-                    case 'ha':
-                        status.gloves = { status: 'absent', text: 'Gloves Absent' };
-                        break;
+                    
+                    // Gown classifications
                     case 'ga':
                         status.gown = { status: 'absent', text: 'Gown Absent' };
                         break;
                     case 'gi':
                         status.gown = { status: 'incomplete', text: 'Gown Incomplete' };
                         break;
+                    
+                    // Eyewear classifications
                     case 'ea':
                         status.eyewear = { status: 'absent', text: 'Eyewear Absent' };
+                        break;
+                    case 'ei':
+                        status.eyewear = { status: 'incomplete', text: 'Eyewear Incomplete' };
+                        break;
+                    // Gloves classifications
+                    case 'ha':
+                        status.gloves = { status: 'absent', text: 'Glove Absent' };
                         break;
                 }
             });
@@ -724,12 +842,12 @@ class UI {
         
         switch (status.status) {
             case 'absent':
-                backgroundColor = '#dc3545'; // Red
+                backgroundColor = '#C93D3D'; // Red
                 textColor = 'white';
                 break;
             case 'incomplete':
-                backgroundColor = '#ffc107'; // Yellow
-                textColor = '#333';
+                backgroundColor = '#E1A61E'; // Yellow
+                textColor = 'white';
                 break;
             case 'compliant':
                 backgroundColor = '#28a745'; // Green
@@ -958,9 +1076,16 @@ class UI {
         const currentTime = (currentFrame - 1) / videoInfo.fps;
         const totalTime = videoInfo.duration;
         
-        const timeLabel = document.getElementById('timeLabel');
-        if (timeLabel) {
-            timeLabel.textContent = `${window.PPE_UTILS.formatTime(currentTime)} / ${window.PPE_UTILS.formatTime(totalTime)}`;
+        // 更新当前时间显示
+        const currentTimeElement = document.getElementById('currentTime');
+        if (currentTimeElement) {
+            currentTimeElement.textContent = window.PPE_UTILS.formatTime(currentTime);
+        }
+        
+        // 更新总时间显示
+        const totalTimeElement = document.getElementById('totalTime');
+        if (totalTimeElement) {
+            totalTimeElement.textContent = window.PPE_UTILS.formatTime(totalTime);
         }
     }
 
@@ -1144,57 +1269,119 @@ class UI {
                 this.initializeCanvasSize(videoInfo.width, videoInfo.height);
                 await this.viewer.displayCurrentFrame();
             }
+            
+            // Force re-calculate control bar width
+            this.updateControlBarWidth();
         }, 100);
     }
+
+    /**
+     * Update control bar width based on panel state
+     */
+    updateControlBarWidth() {
+        const canvasControlsContainer = document.getElementById('canvasControlsContainer');
+        const centerPanel = document.querySelector('.center-panel');
+        
+        if (canvasControlsContainer && centerPanel) {
+            // Force a reflow to ensure CSS calculations are applied
+            canvasControlsContainer.style.width = canvasControlsContainer.offsetWidth + 'px';
+            setTimeout(() => {
+                canvasControlsContainer.style.width = '';
+            }, 10);
+        }
+    }
+
+    /**
+     * Update PPE compliance overview
+     */
+    calculatePPECompliance(boxes) {
+        const compliance = {
+            mask: { total: 0, compliant: 0, absent: 0, incomplete: 0 },
+            gloves: { total: 0, compliant: 0, absent: 0 },
+            eyewear: { total: 0, compliant: 0, absent: 0, incomplete: 0 },
+            gown: { total: 0, compliant: 0, absent: 0, incomplete: 0 }
+        };
+        
+        boxes.forEach(box => {
+            // Count masks
+            compliance.mask.total++;
+            if (box.classTypes) {
+                if (box.classTypes.includes('nc')) {
+                    compliance.mask.compliant++;
+                } else if (box.classTypes.includes('ma')) {
+                    compliance.mask.absent++;
+                } else if (box.classTypes.includes('mi')) {
+                    compliance.mask.incomplete++;
+                } else {
+                    compliance.mask.compliant++; // Default to compliant if no mask issues detected
+                }
+            } else {
+                compliance.mask.compliant++; // Default to compliant if no classTypes
+            }
+            
+            // Count gloves
+            compliance.gloves.total++;
+            if (box.classTypes) {
+                if (box.classTypes.includes('hc')) {
+                    compliance.gloves.compliant++;
+                } else if (box.classTypes.includes('ha')) {
+                    compliance.gloves.absent++;
+                } else {
+                    compliance.gloves.compliant++; // Default to compliant if no glove issues detected
+                }
+            } else {
+                compliance.gloves.compliant++; // Default to compliant if no classTypes
+            }
+            
+            // Count eyewear
+            compliance.eyewear.total++;
+            if (box.classTypes) {
+                if (box.classTypes.includes('gg') || box.classTypes.includes('pr')) {
+                    compliance.eyewear.compliant++;
+                } else if (box.classTypes.includes('ea')) {
+                    compliance.eyewear.absent++;
+                } else if (box.classTypes.includes('ei')) {
+                    compliance.eyewear.incomplete++;
+                } else {
+                    compliance.eyewear.compliant++; // Default to compliant if no eyewear issues detected
+                }
+            } else {
+                compliance.eyewear.compliant++; // Default to compliant if no classTypes
+            }
+            
+            // Count gowns
+            compliance.gown.total++;
+            if (box.classTypes) {
+                if (box.classTypes.includes('gc')) {
+                    compliance.gown.compliant++;
+                } else if (box.classTypes.includes('ga')) {
+                    compliance.gown.absent++;
+                } else if (box.classTypes.includes('gi')) {
+                    compliance.gown.incomplete++;
+                } else {
+                    compliance.gown.compliant++; // Default to compliant if no gown issues detected
+                }
+            } else {
+                compliance.gown.compliant++; // Default to compliant if no classTypes
+            }
+        });
+        
+        return compliance;
+    }
+
 
     /**
      * Update PPE compliance overview
      */
     updatePPEComplianceOverview() {
         const boxes = this.viewer.annotationRenderer.getCurrentFrameAnnotations();
+        const compliance = this.calculatePPECompliance(boxes);
         
-        // Initialize counters
-        let maskTotal = 0;
-        let maskCompliant = 0;
-        let glovesTotal = 0;
-        let glovesCompliant = 0;
-        let eyewearTotal = 0;
-        let eyewearCompliant = 0;
-        let gownTotal = 0;
-        let gownCompliant = 0;
-        
-        // Count PPE compliance for each person
-        boxes.forEach(box => {
-            // Count masks
-            maskTotal++;
-            if (!box.classTypes || (!box.classTypes.includes('ma') && !box.classTypes.includes('mi') && !box.classTypes.includes('rc'))) {
-                maskCompliant++;
-            }
-            
-            // Count gloves
-            glovesTotal++;
-            if (!box.classTypes || !box.classTypes.includes('ha')) {
-                glovesCompliant++;
-            }
-            
-            // Count eyewear
-            eyewearTotal++;
-            if (!box.classTypes || !box.classTypes.includes('ea')) {
-                eyewearCompliant++;
-            }
-            
-            // Count gowns
-            gownTotal++;
-            if (!box.classTypes || (!box.classTypes.includes('ga') && !box.classTypes.includes('gi'))) {
-                gownCompliant++;
-            }
-        });
-        
-        // Update display
-        this.updateOverviewCard('maskCard', maskCompliant, maskTotal);
-        this.updateOverviewCard('glovesCard', glovesCompliant, glovesTotal);
-        this.updateOverviewCard('eyewearCard', eyewearCompliant, eyewearTotal);
-        this.updateOverviewCard('gownCard', gownCompliant, gownTotal);
+        // Update display using the new compliance calculation
+        this.updateOverviewCard('maskCard', compliance.mask.compliant, compliance.mask.total);
+        this.updateOverviewCard('glovesCard', compliance.gloves.compliant, compliance.gloves.total);
+        this.updateOverviewCard('eyewearCard', compliance.eyewear.compliant, compliance.eyewear.total);
+        this.updateOverviewCard('gownCard', compliance.gown.compliant, compliance.gown.total);
     }
 
     /**
@@ -1207,8 +1394,8 @@ class UI {
         if (card && countElement) {
             countElement.textContent = `${compliant}/${total}`;
             
-            // Keep blue background as requested
-            card.style.background = '#007bff';
+            // Remove dynamic background setting to prevent color changes
+            // The background color is now controlled by CSS only
         }
     }
 

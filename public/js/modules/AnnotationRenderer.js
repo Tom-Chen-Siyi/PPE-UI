@@ -144,10 +144,13 @@ class AnnotationRenderer {
             // Check various PPE states
             if (attrs.gown === 'GA') classTypes.push('ga'); // Gown Absent
             if (attrs.gown === 'GI') classTypes.push('gi'); // Gown Improper
+
             if (attrs.mask === 'MA') classTypes.push('ma'); // Mask Absent
-            if (attrs.mask === 'MI') classTypes.push('mi'); // Mask Improper
-            if (attrs.mask === 'RC') classTypes.push('rc'); // Mask Removed
-            if (attrs.eyewear === 'EA') classTypes.push('ea'); // Eyewear Absent
+            if (attrs.mask === 'MI'||attrs.mask === 'RC') classTypes.push('mi'); // Mask Improper
+
+            if (attrs.eyewear === 'EA'||attrs.eyewear === 'PG') classTypes.push('ea'); // Eyewear Absent
+            if (attrs.eyewear === 'SG'||attrs.eyewear === 'FI') classTypes.push('ei'); // Eyewear Absent
+
             if (attrs.gloves_left === 'HA' || attrs.gloves_right === 'HA') classTypes.push('ha'); // Gloves Absent
             
             // Use the first type as the primary type (for compatibility)
@@ -522,7 +525,7 @@ class AnnotationRenderer {
         const colors = {
             gi: [255, 165, 0],  // Orange - Gown Improper
             ga: [255, 0, 0],    // Red - Gown Absent
-            rc: [255, 255, 0],  // Yellow - Mask Removed
+            ei: [255, 165, 0],  // Orange - Eyewear Improper
             mi: [255, 165, 0],  // Orange - Mask Improper
             ma: [255, 0, 0],    // Red - Mask Absent
             ha: [255, 0, 0],    // Red - Gloves Absent
@@ -548,8 +551,8 @@ class AnnotationRenderer {
                     case 'ga':
                         texts.push('Gown Absent');
                         break;
-                    case 'rc':
-                        texts.push('Mask Removed');
+                    case 'ei':
+                        texts.push('Eyewear Improper');
                         break;
                     case 'mi':
                         texts.push('Mask Improper');
@@ -566,56 +569,9 @@ class AnnotationRenderer {
                 }
             });
         }
-        // Compatible with old data structure (only check class)
-        else if (bbox.class) {
-            if (bbox.class === 'gi') texts.push('Gown Improper');
-            if (bbox.class === 'ga') texts.push('Gown Absent');
-            if (bbox.class === 'rc') texts.push('Mask Removed');
-            if (bbox.class === 'mi') texts.push('Mask Improper');
-            if (bbox.class === 'ma') texts.push('Mask Absent');
-            if (bbox.class === 'ha') texts.push('Gloves Absent');
-            if (bbox.class === 'ea') texts.push('Eyewear Absent');
-        }
-        
         return texts;
     }
 
-    /**
-     * Get detailed PPE non-compliance information
-     */
-    getDetailedPPEInfo(bbox) {
-        const info = [];
-        
-        if (bbox.classTypes) {
-            bbox.classTypes.forEach(classType => {
-                switch (classType) {
-                    case 'ga':
-                        info.push('Gown Absent - Missing protective gown');
-                        break;
-                    case 'gi':
-                        info.push('Gown Improper - Incorrectly worn protective gown');
-                        break;
-                    case 'ma':
-                        info.push('Mask Absent - Missing face mask');
-                        break;
-                    case 'mi':
-                        info.push('Mask Improper - Incorrectly worn face mask');
-                        break;
-                    case 'rc':
-                        info.push('Mask Removed - Face mask has been removed');
-                        break;
-                    case 'ea':
-                        info.push('Eyewear Absent - Missing protective eyewear');
-                        break;
-                    case 'ha':
-                        info.push('Gloves Absent - Missing protective gloves');
-                        break;
-                }
-            });
-        }
-        
-        return info;
-    }
 
     /**
      * Get the closest bounding box
@@ -647,36 +603,6 @@ class AnnotationRenderer {
         return closestBox;
     }
 
-    /**
-     * Get person information by ID from the current frame
-     */
-    getPersonById(personId) {
-        const boxes = this.getCurrentFrameAnnotations();
-        return boxes.find(bbox => bbox.id === personId);
-    }
-
-    /**
-     * Detect exclamation icon click
-     */
-    checkExclamationIconClick(x, y) {
-        if (!this.exclamationIcons) return null;
-
-        for (const icon of this.exclamationIcons) {
-            const iconCenterX = icon.x + icon.size / 2;
-            const iconCenterY = icon.y + icon.size / 2;
-            const distance = Math.sqrt((x - iconCenterX) ** 2 + (y - iconCenterY) ** 2);
-            
-            if (distance <= icon.size / 2) {
-                return icon;
-            }
-        }
-        
-        return null;
-    }
-
-    /**
-     * Update adherence info
-     */
     updateAdherenceInfo() {
         const boxes = this.getCurrentFrameAnnotations();
         let totalBoxes = 0;

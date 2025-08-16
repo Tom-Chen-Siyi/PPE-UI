@@ -32,6 +32,9 @@ class VideoPlayer {
         
         this.frameImageList = [];
         this.usePngFrames = false;
+        
+        // 初始化播放按钮图标状态
+        this.initializePlayButtonIcon();
     }
 
     // ========================================
@@ -311,6 +314,37 @@ class VideoPlayer {
         } else {
             this.startPlayback();
         }
+        this.updatePlayButtonIcon();
+    }
+
+    /**
+     * 初始化播放按钮图标
+     */
+    initializePlayButtonIcon() {
+        // 延迟初始化，确保DOM元素已加载
+        setTimeout(() => {
+            this.updatePlayButtonIcon();
+        }, 100);
+    }
+
+    /**
+     * 更新播放按钮图标
+     */
+    updatePlayButtonIcon() {
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        
+        if (playIcon && pauseIcon) {
+            if (this.isPlaying) {
+                // 正在播放，显示暂停图标
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+            } else {
+                // 已暂停，显示播放图标
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+            }
+        }
     }
 
     /**
@@ -321,6 +355,7 @@ class VideoPlayer {
 
         this.isPlaying = true;
         console.log('Starting playback...');
+        this.updatePlayButtonIcon();
 
         const playNextFrame = async () => {
             if (!this.isPlaying) return;
@@ -371,6 +406,7 @@ class VideoPlayer {
             this.playbackTimer = null;
         }
         console.log('Playback stopped');
+        this.updatePlayButtonIcon();
     }
 
     /**
@@ -378,6 +414,7 @@ class VideoPlayer {
      */
     pauseVideo() {
         this.stopPlayback();
+        this.updatePlayButtonIcon();
     }
 
     /**

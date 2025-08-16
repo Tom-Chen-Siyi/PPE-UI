@@ -6,11 +6,15 @@
 const ICON_PATHS = {
     gi: '/icon/gown.png',      // Gown - Improper/Absent
     ga: '/icon/gown.png',
-    rc: '/icon/mask.png',      // Mask - Removed
+
     mi: '/icon/mask.png',      // Mask - Improper
     ma: '/icon/mask.png',      // Mask - Absent
+
     ha: '/icon/gloves.png',    // Gloves - Absent
+    
     ea: '/icon/eyewear.png',   // Eyewear - Absent
+    ei: '/icon/eyewear.png',   // Eyewear - Inadequate
+
     alert: '/icon/exclamation icon.png' // Exclamation Mark
 };
 

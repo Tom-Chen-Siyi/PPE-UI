@@ -10,7 +10,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #DDF1FF;
     min-height: 100vh;
     overflow: hidden;
 }
@@ -31,7 +31,7 @@ body {
    ======================================== */
 
 .left-panel {
-    width: 450px;
+    width: 400px;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     border-right: 1px solid rgba(0, 0, 0, 0.1);
@@ -41,6 +41,7 @@ body {
     position: relative;
     z-index: 10;
     overflow: hidden;
+    height: 100vh;
 }
 
 .left-panel.hidden {
@@ -227,12 +228,18 @@ body {
    ======================================== */
 
 .upload-section {
-    padding: 20px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    padding-top: 50px;
+    padding-bottom: 80px;
 }
 
 .upload-group {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #DDF1FF;
+    border-radius: 12px;
 }
 
 .upload-group label {
@@ -240,7 +247,7 @@ body {
     margin-bottom: 8px;
     font-weight: 600;
     color: #333;
-    font-size: 14px;
+    font-size: 10px;
 }
 
 .file-input-wrapper {
@@ -282,7 +289,7 @@ body {
 .upload-btn {
     width: 100%;
     padding: 12px;
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    background: #0D4495;
     color: white;
     border: none;
     border-radius: 8px;
@@ -290,7 +297,6 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
 }
 
 .upload-btn:hover {
@@ -367,21 +373,13 @@ body {
 }
 
 .refresh-btn {
-    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    background:#0D4495 ;
     box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
 }
 
-.refresh-btn:hover {
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
-}
-
 .generate-btn {
-    background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+    background:#0D4495 ;
     box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
-}
-
-.generate-btn:hover {
-    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
 }
 
 .delete-btn {
@@ -395,16 +393,17 @@ body {
 
 .file-item {
     display: flex;
-    align-items: flex-start;
-    padding: 10px;
-    margin-bottom: 8px;
-    background: #f8f9fa;
+    align-items: center;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    background: #ffffff;
     border: 1px solid #e9ecef;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-size: 13px;
-    min-height: 40px;
+    font-size: 12px;
+    min-height: 32px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .file-item:hover {
@@ -419,9 +418,17 @@ body {
     box-shadow: 0 2px 6px rgba(40, 167, 69, 0.2);
 }
 
+.file-item .file-type-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    flex-shrink: 0;
+    object-fit: contain;
+}
+
 .file-item input[type="checkbox"] {
-    margin-right: 10px;
-    margin-top: 2px;
+    margin-right: 8px;
+    margin-top: 0;
     flex-shrink: 0;
 }
 
@@ -434,19 +441,32 @@ body {
 .file-item .file-name {
     font-weight: 600;
     color: #333;
-    margin-bottom: 2px;
-    word-wrap: break-word;
-    word-break: break-all;
-    line-height: 1.3;
-    max-height: none;
-}
-
-.file-item .file-details {
-    font-size: 11px;
-    color: #6c757d;
+    margin-bottom: 1px;
     word-wrap: break-word;
     word-break: break-all;
     line-height: 1.2;
+    max-height: none;
+    font-size: 13px;
+}
+
+.file-item .file-details {
+    font-size: 10px;
+    color: #6c757d;
+    word-wrap: break-word;
+    word-break: break-all;
+    line-height: 1.1;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.file-item .file-size {
+    color: #6c757d;
+}
+
+.file-item .frame-info {
+    color: #28a745;
+    font-weight: 500;
 }
 
 .file-item .file-size {
@@ -487,7 +507,7 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 20px;
+    padding: 20px 20px 0 20px;
     min-height: 0;
 }
 
@@ -495,7 +515,7 @@ body {
     flex: 1;
     position: relative;
     background: #000;
-    border-radius: 12px;
+    border-radius: 0 0 12px 12px;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     min-height: 0;
@@ -503,21 +523,22 @@ body {
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    margin: 10px;
+    margin: 10px 10px 10px 10px;
+    margin-top: 0;
     /* 确保容器本身也居中 */
     max-width: 100%;
     max-height: 100%;
     /* 更好地利用空间 */
     width: 100%;
     height: 100%;
-    padding-bottom: 40px; /* 只为内容留一点空间，按钮贴底部 */
+    padding-bottom: 0; /* 移除底部padding，因为控制面板现在在页面底部 */
 }
 
 #videoCanvas {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    border-radius: 12px;
+    border-radius: 0 0 12px 12px;
 }
 
 .video-overlay {
@@ -535,9 +556,9 @@ body {
 
 .canvas-controls-container {
     margin: 20px auto;
-    padding: 20px;
+    padding: 15px 20px;
     padding-right: 48px;
-    background: rgba(255, 255, 255, 0.95);
+    background: #0D4495;
     backdrop-filter: blur(10px);
     border-radius: 12px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
@@ -559,47 +580,93 @@ body {
 .video-controls {
     display: flex;
     flex-direction: column;
+}
+
+.media-controls-bar {
+    display: flex;
+    align-items: center;
     gap: 15px;
+    background: #0D4495;
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 2px 8px rgba(13, 68, 149, 0.3);
+}
+
+.progress-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.time-display {
+    font-size: 14px;
+    color: white;
+    font-weight: 600;
+    min-width: 45px;
+    text-align: center;
 }
 
 .progress-container {
+    flex: 1;
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    align-items: center;
 }
 
 .progress-slider {
     width: 100%;
-    height: 8px;
-    background: #e9ecef;
-    border-radius: 4px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
     outline: none;
     cursor: pointer;
     transition: all 0.2s ease;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.progress-slider::-webkit-slider-track {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    height: 6px;
+}
+
+.progress-slider::-webkit-slider-fill-lower {
+    background: white;
+    border-radius: 3px;
+    height: 6px;
+}
+
+.progress-slider::-moz-range-track {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    height: 6px;
+    border: none;
+}
+
+.progress-slider::-moz-range-progress {
+    background: white;
+    border-radius: 3px;
+    height: 6px;
 }
 
 .progress-slider::-webkit-slider-thumb {
     appearance: none;
-    width: 20px;
-    height: 20px;
-    background: linear-gradient(135deg, #007bff, #0056b3);
+    width: 16px;
+    height: 16px;
+    background: white;
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     transition: all 0.2s ease;
 }
 
 .progress-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+    transform: scale(1.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
-#timeLabel {
-    text-align: center;
-    font-size: 14px;
-    color: #495057;
-    font-weight: 600;
-}
+/* 移除旧的timeLabel样式，使用新的time-display */
 
 .control-buttons {
     display: flex;
@@ -609,35 +676,134 @@ body {
     flex-wrap: wrap;
 }
 
-#playBtn {
-    padding: 12px 24px;
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+.play-pause-btn {
+    padding: 10px;
+    background: transparent;
     color: white;
     border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
+    border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
 }
 
-#playBtn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+.play-pause-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
 }
 
-#playBtn:active {
-    transform: translateY(0);
+.play-pause-btn:active {
+    transform: scale(0.95);
+}
+
+.play-icon, .pause-icon {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1); /* 将图标转换为白色 */
 }
 
 .control-buttons label {
     font-size: 14px;
-    color: #495057;
+    color: #ffffff;
     font-weight: 600;
     cursor: pointer;
 }
 
+/* Canvas上方控制区域样式 */
+.canvas-top-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #DDF1FF;
+    padding: 12px 20px;
+    border-radius: 8px 8px 0 0;
+    border-bottom: 2px solid #0D4495;
+    margin-bottom: 0;
+}
+
+/* Toggle Switch Styles */
+.toggle-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: 12px;
+}
+
+.toggle-control label {
+    font-size: 14px;
+    color: #333333;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.toggle-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-label {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.3);
+    transition: 0.3s;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+}
+
+.toggle-label:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-input:checked + .toggle-label {
+    background-color: #28a745;
+}
+
+.toggle-input:checked + .toggle-label:before {
+    transform: translateX(26px);
+}
+
+.toggle-input:focus + .toggle-label {
+    box-shadow: 0 0 1px #28a745;
+}
+
+.toggle-label:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+.toggle-input:checked + .toggle-label:hover {
+    background-color: #2fb344;
+}
+
+/* 保持原有的checkbox样式以兼容性 */
 .control-buttons input[type="checkbox"] {
     width: 16px;
     height: 16px;
@@ -669,7 +835,7 @@ body {
     border: 1px solid rgba(0, 123, 255, 0.2);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     padding: 16px;
-    border-left: 4px solid #007bff; /* 蓝色左边框 */
+
 }
 
 .overview-title {
@@ -687,13 +853,13 @@ body {
 }
 
 .overview-card {
-    background: #007bff;
+    background:#0D4495;
     color: white;
     border-radius: 6px;
     padding: 12px 8px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
 }
@@ -711,9 +877,10 @@ body {
 }
 
 .ppe-icon {
-    width: 20px;
-    height: 20px;
+    width: 40px;
+    height: 40px;
     filter: brightness(0) invert(1); /* 将图标转换为白色 */
+    object-fit: contain;
 }
 
 .overview-text {
@@ -724,13 +891,13 @@ body {
 }
 
 .overview-text span:first-child {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 600;
     line-height: 1.2;
 }
 
 .overview-label {
-    font-size: 10px;
+    font-size: 12px;
     opacity: 0.9;
     line-height: 1.2;
 }
@@ -745,7 +912,6 @@ body {
     border: 1px solid rgba(40, 167, 69, 0.2);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     padding: 16px;
-    border-left: 4px solid #28a745; /* 绿色左边框 */
 }
 
 .compliance-title {
@@ -772,7 +938,6 @@ body {
     border: 1px solid rgba(220, 53, 69, 0.2);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     padding: 16px;
-    border-left: 4px solid #dc3545; /* 红色左边框 */
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -828,10 +993,10 @@ body {
    ======================================== */
 
 .member-compliance-section {
-    margin-bottom: 20px;
-    padding: 16px;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 8px;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #DDF1FF;
+    border-radius: 5px;
     border: 1px solid #e9ecef;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -841,28 +1006,28 @@ body {
 }
 
 .member-title {
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 600;
     color: #333;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     text-align: left;
 }
 
 .ppe-status-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr; /* 改为1×4布局 */
-    gap: 8px;
+    gap: 6px;
 }
 
 .ppe-status-card {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 12px 6px; /* 减少水平内边距以适应更窄的卡片 */
+    padding: 10px 6px; /* 增加内边距以适应更大的图标 */
     border-radius: 6px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    min-height: 80px;
+    min-height: 70px;
     justify-content: center;
 }
 
@@ -872,16 +1037,17 @@ body {
 }
 
 .ppe-status-icon {
-    margin-bottom: 6px; /* 减少图标和文字间距 */
+    margin-bottom: 5px; /* 增加图标和文字间距 */
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .ppe-status-icon-img {
-    width: 20px; /* 稍微减小图标尺寸 */
-    height: 20px;
+    width: 40px; /* 减小图标尺寸 */
+    height: 40px;
     filter: brightness(0) invert(1); /* 将图标转换为白色 */
+    object-fit: contain;
 }
 
 /* 对于黄色背景，图标保持原色 */
@@ -890,7 +1056,7 @@ body {
 }
 
 .ppe-status-text {
-    font-size: 10px; /* 减小字体以适应更窄的卡片 */
+    font-size: 8px; /* 增加字体大小 */
     font-weight: 600;
     text-align: center;
     line-height: 1.2;
@@ -899,10 +1065,10 @@ body {
 
 .all-compliant-message {
     color: #28a745;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     text-align: center;
-    padding: 12px;
+    padding: 8px;
     background: #d4edda;
     border-radius: 6px;
     border: 1px solid #c3e6cb;
@@ -919,8 +1085,9 @@ body {
     }
     
     .ppe-icon {
-        width: 18px;
-        height: 18px;
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
     }
     
     .overview-text span:first-child {
@@ -943,8 +1110,9 @@ body {
     }
     
     .ppe-status-icon-img {
-        width: 18px;
-        height: 18px;
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
     }
     
     .ppe-status-text {
@@ -968,8 +1136,9 @@ body {
     }
     
     .ppe-status-icon-img {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
     }
     
     .ppe-status-text {
@@ -1123,13 +1292,58 @@ body {
         flex-wrap: wrap;
     }
     
-    #playBtn {
-        padding: 10px 20px;
+    .media-controls-bar {
+        padding: 10px 12px;
+        gap: 12px;
+    }
+    
+    .play-pause-btn {
+        width: 36px;
+        height: 36px;
+        padding: 8px;
+    }
+    
+    .play-icon, .pause-icon {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .time-display {
         font-size: 13px;
+        min-width: 40px;
     }
     
     .control-buttons label {
         font-size: 13px;
+    }
+    
+    .canvas-top-controls {
+        padding: 10px 15px;
+    }
+    
+    .canvas-top-controls .toggle-control label {
+        font-size: 13px;
+    }
+    
+    .toggle-control {
+        gap: 8px;
+        margin-left: 8px;
+    }
+    
+    .toggle-switch {
+        width: 44px;
+        height: 22px;
+    }
+    
+    .toggle-label:before {
+        height: 16px;
+        width: 16px;
+        left: 3px;
+        bottom: 3px;
+    }
+    
+    .toggle-input:checked + .toggle-label:before {
+        transform: translateX(22px);
     }
 }
 
@@ -1151,16 +1365,61 @@ body {
         justify-content: space-around;
     }
     
-    #playBtn {
-        padding: 8px 16px;
+    .media-controls-bar {
+        padding: 8px 10px;
+        gap: 10px;
+    }
+    
+    .play-pause-btn {
+        width: 32px;
+        height: 32px;
+        padding: 6px;
+    }
+    
+    .play-icon, .pause-icon {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .toggle-control {
+        gap: 6px;
+        margin-left: 6px;
+    }
+    
+    .toggle-control label {
         font-size: 12px;
+    }
+    
+    .canvas-top-controls {
+        padding: 8px 12px;
+    }
+    
+    .canvas-top-controls .toggle-control label {
+        font-size: 12px;
+    }
+    
+    .toggle-switch {
+        width: 40px;
+        height: 20px;
+    }
+    
+    .toggle-label:before {
+        height: 14px;
+        width: 14px;
+        left: 3px;
+        bottom: 3px;
+    }
+    
+    .toggle-input:checked + .toggle-label:before {
+        transform: translateX(20px);
+    }
+    
+    .time-display {
+        font-size: 12px;
+        min-width: 35px;
     }
     
     .control-buttons label {
-        font-size: 12px;
-    }
-    
-    #timeLabel {
         font-size: 12px;
     }
 }
@@ -1234,21 +1493,22 @@ body {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 6px;
+    padding: 5px;
     border-radius: 4px;
     transition: all 0.2s ease;
-    margin-right: 8px;
+    margin-left: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 32px;
-    height: 32px;
+    min-width: 28px;
+    height: 28px;
     background-color: transparent;
+    flex-shrink: 0;
 }
 
 .file-delete-btn:hover {
     background-color: #dc3545;
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
 .file-delete-btn:active {
@@ -1257,40 +1517,18 @@ body {
 
 /* Delete icon image */
 .delete-icon-img {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     filter: brightness(0); /* Make icon black */
     transition: filter 0.2s ease;
+    object-fit: contain;
 }
 
 .file-delete-btn:hover .delete-icon-img {
     filter: brightness(0) invert(1); /* Make icon white on hover */
 }
 
-/* Adjust file item layout to accommodate delete button */
-.file-item {
-    display: flex;
-    align-items: center;
-    padding: 8px 12px;
-    border-bottom: 1px solid #e0e0e0;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    position: relative;
-}
-
-.file-item:hover {
-    background-color: #f8f9fa;
-}
-
-.file-item:last-child {
-    border-bottom: none;
-}
-
-.file-item input[type="checkbox"] {
-    margin-right: 8px;
-    flex-shrink: 0;
-}
-
+/* File info layout */
 .file-info {
     flex: 1;
     min-width: 0;
@@ -1350,30 +1588,226 @@ body {
 
 /* Upload group spacing */
 .upload-group {
-    margin-bottom: 25px;
-    padding-bottom: 20px;
+    margin-bottom: 30px;
+    padding-bottom: 10px;
     border-bottom: 1px solid #e9ecef;
 }
 
 .upload-group:last-child {
     border-bottom: none;
     margin-bottom: 0;
+    border-radius: 12px;
+}
+
+/* Upload title and subtitle */
+.upload-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 6px 0;
+}
+
+.upload-subtitle {
+    font-size: 13px;
+    color: #6c757d;
+    margin: 0 0 15px 0;
+}
+
+/* Drag and drop zone */
+.drag-drop-zone {
+    border: 2px dashed #007bff;
+    border-radius: 12px;
+    padding: 12px 10px;
+    text-align: center;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin-bottom: 15px;
+}
+
+.drag-drop-zone:hover {
+    border-color: #0056b3;
+    background: #e9ecef;
+}
+
+.drag-drop-zone.dragover {
+    border-color: #28a745;
+    background: #d4edda;
+}
+
+.drag-drop-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.drag-drop-text {
+    font-size: 14px;
+    color: #495057;
+    font-weight: 500;
+}
+
+.upload-divider {
+    position: relative;
+    width: 100%;
+    text-align: center;
+    margin: 3px 0;
+}
+
+.upload-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #dee2e6;
+}
+
+.divider-text {
+    background: #f8f9fa;
+    padding: 0 15px;
+    color: #6c757d;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.browse-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.browse-btn:hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.file-type-info {
+    font-size: 11px;
+    color: #6c757d;
+    margin: 0 0 10px 0;
+    text-align: center;
 }
 
 /* Control buttons section at bottom */
 .control-buttons-section {
-    margin-top: auto;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
     padding: 20px;
-    background: rgba(248, 249, 250, 0.9);
+    background: rgba(248, 249, 250, 0.95);
     border-top: 1px solid #e9ecef;
     display: flex;
     gap: 10px;
     justify-content: center;
+    z-index: 100;
 }
 
 .control-buttons-section .file-btn {
     flex: 1;
     max-width: 150px;
+}
+
+/* Responsive styles for file items */
+@media (max-width: 768px) {
+    .file-item {
+        padding: 6px 10px;
+        min-height: 28px;
+        font-size: 11px;
+    }
+    
+    .file-item .file-name {
+        font-size: 12px;
+    }
+    
+    .file-item .file-details {
+        font-size: 9px;
+    }
+    
+    .file-item .file-type-icon {
+        width: 18px;
+        height: 18px;
+        margin-right: 6px;
+        object-fit: contain;
+    }
+    
+    .delete-icon-img {
+        width: 16px;
+        height: 16px;
+        object-fit: contain;
+    }
+    
+    .file-delete-btn {
+        min-width: 24px;
+        height: 24px;
+        padding: 4px;
+    }
+}
+
+@media (max-width: 480px) {
+    .file-item {
+        padding: 5px 8px;
+        min-height: 26px;
+        font-size: 10px;
+    }
+    
+    .file-item .file-name {
+        font-size: 11px;
+    }
+    
+    .file-item .file-details {
+        font-size: 8px;
+    }
+    
+    .file-item .file-type-icon {
+        width: 16px;
+        height: 16px;
+        margin-right: 5px;
+        object-fit: contain;
+    }
+    
+    .delete-icon-img {
+        width: 14px;
+        height: 14px;
+        object-fit: contain;
+    }
+    
+    .file-delete-btn {
+        min-width: 20px;
+        height: 20px;
+        padding: 3px;
+    }
+    
+    .drag-drop-zone {
+        padding: 10px 8px;
+    }
+    
+    .drag-drop-text {
+        font-size: 12px;
+    }
+    
+    .browse-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    .upload-title {
+        font-size: 16px;
+    }
+    
+    .upload-subtitle {
+        font-size: 13px;
+    }
 }
 
 
