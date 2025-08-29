@@ -282,28 +282,6 @@ class AnnotationRenderer {
         this.viewer.ctx.strokeStyle = 'rgb(59, 249, 252)';
         this.viewer.ctx.lineWidth = 2;
         this.viewer.ctx.strokeRect(x, y, w, h);
-
-        // // Draw text
-        // if (texts.length > 0) {
-        //     this.viewer.ctx.fillStyle = 'rgb(59, 249, 252)';
-        //     this.viewer.ctx.font = '12px Arial';
-        //     this.viewer.ctx.textAlign = 'center';
-            
-        //     texts.forEach((text, index) => {
-        //         const textY = y - 10 - (texts.length - 1 - index) * 15;
-        //         this.viewer.ctx.fillText(text, x + w / 2, textY);
-        //     });
-        // }
-
-        // // Show all information (if enabled)
-        // if (showAll && bbox.class) {
-        //     this.viewer.ctx.fillStyle = 'rgb(59, 249, 252)';
-        //     this.viewer.ctx.font = '10px Arial';
-        //     this.viewer.ctx.textAlign = 'left';
-            
-        //     const infoText = `${bbox.class} (${Math.round(bbox * 100)}%)`;
-        //     this.viewer.ctx.fillText(infoText, x, y - 5);
-        // }
     }
 
     /**
@@ -386,12 +364,22 @@ class AnnotationRenderer {
                     if (currentX + ppeIconSize <= canvasWidth && currentX >= 0 && 
                         ppeIconY + ppeIconSize <= canvasHeight && ppeIconY >= 0) {
                         
-                    // Draw red circular background
+                    // Determine circle color based on PPE status
+                    let circleColor;
+                    if (classType === 'mi' || classType === 'gi' || classType === 'ei') {
+                        // Incomplete status - Yellow
+                        circleColor = '#E1A61E';
+                    } else {
+                        // Absent status - Red
+                        circleColor = 'rgb(237,67,70)';
+                    }
+                    
+                    // Draw circular background with appropriate color
                     const circleRadius = ppeIconSize / 2 + 8; // Slightly larger than icon
                     const circleCenterX = currentX + ppeIconSize / 2;
                     const circleCenterY = ppeIconY + ppeIconSize / 2;
                     
-                    this.viewer.ctx.fillStyle = 'rgb(237,67,70)'; // Red circular background
+                    this.viewer.ctx.fillStyle = circleColor;
                     this.viewer.ctx.beginPath();
                     this.viewer.ctx.arc(circleCenterX, circleCenterY, circleRadius, 0, 2 * Math.PI);
                     this.viewer.ctx.fill();
@@ -406,12 +394,22 @@ class AnnotationRenderer {
                         ppeIconY = y + h - ppeIconSize - 5;
                         
                         if (ppeIconY >= 0 && currentX + ppeIconSize <= canvasWidth) {
-                            // Draw red circular background
+                            // Determine circle color based on PPE status
+                            let circleColor;
+                            if (classType === 'mi' || classType === 'gi' || classType === 'ei') {
+                                // Incomplete status - Yellow
+                                circleColor = '#E1A61E';
+                            } else {
+                                // Absent status - Red
+                                circleColor = 'rgb(237,67,70)';
+                            }
+                            
+                            // Draw circular background with appropriate color
                             const circleRadius = ppeIconSize / 2 + 8;
                             const circleCenterX = currentX + ppeIconSize / 2;
                             const circleCenterY = ppeIconY + ppeIconSize / 2;
                             
-                            this.viewer.ctx.fillStyle = 'rgb(237,67,70)';
+                            this.viewer.ctx.fillStyle = circleColor;
                             this.viewer.ctx.beginPath();
                             this.viewer.ctx.arc(circleCenterX, circleCenterY, circleRadius, 0, 2 * Math.PI);
                             this.viewer.ctx.fill();
