@@ -94,30 +94,7 @@ class UI {
             });
         }
 
-        // Show all boxes toggle
-        const showAllBoxesToggle = document.getElementById('showAllBoxesToggle');
-        if (showAllBoxesToggle) {
-            // Synchronize initial state
-            showAllBoxesToggle.checked = this.viewer.annotationRenderer.showAllBoxesEnabled;
-            showAllBoxesToggle.addEventListener('change', async (e) => {
-                this.viewer.annotationRenderer.toggleShowAllBoxes();
-                // Redraw current frame to show/hide all boxes
-                await this.viewer.displayCurrentFrame();
-            });
-        }
 
-        // PPE Non Compliance Metrics toggle
-        const nonComplianceMetricsToggle = document.getElementById('non-compliance-metrics');
-        if (nonComplianceMetricsToggle) {
-            // Set initial state to false (off)
-            nonComplianceMetricsToggle.checked = false;
-            nonComplianceMetricsToggle.addEventListener('change', async (e) => {
-                // TODO: Implement PPE Non Compliance Metrics functionality
-                console.log(`PPE Non Compliance Metrics ${e.target.checked ? 'enabled' : 'disabled'}`);
-                // Placeholder for future implementation
-                // This function will be implemented when the specific functionality is defined
-            });
-        }
 
         // Adaptive playback toggle
         const adaptivePlaybackToggle = document.getElementById('adaptivePlaybackToggle');
@@ -130,6 +107,12 @@ class UI {
 
         // Panel hide/show toggle
         this.initializePanelToggleListeners();
+        
+        // Initialize panel content toggle listeners
+        this.initializePanelContentToggleListeners();
+        
+        // Initialize main panel toggle listeners
+        this.initializeMainPanelToggleListeners();
 
         // File input change events
         this.initializeFileInputListeners();
@@ -610,28 +593,7 @@ class UI {
     hideDetailedPPEInfo() {
         const detailedInfoContainer = document.getElementById('detailedInfoContainer');
         if (detailedInfoContainer) {
-            // Update compliance rate display
-            const complianceRateDisplay = document.getElementById('complianceRateDisplay');
-            if (complianceRateDisplay) {
-                const boxes = this.viewer.annotationRenderer.getCurrentFrameAnnotations();
-                let totalBoxes = 0;
-                let nonadherenceCount = 0;
-
-                boxes.forEach(box => {
-                    totalBoxes++;
-                    const nonadherenceTexts = this.viewer.annotationRenderer.getNonadherenceTexts(box);
-                    if (nonadherenceTexts.length > 0) {
-                        nonadherenceCount++;
-                    }
-                });
-
-                if (totalBoxes > 0) {
-                    const adherenceRate = ((totalBoxes - nonadherenceCount) / totalBoxes * 100).toFixed(1);
-                    complianceRateDisplay.textContent = `${adherenceRate}% (${totalBoxes - nonadherenceCount}/${totalBoxes})`;
-                } else {
-                    complianceRateDisplay.textContent = 'No data available';
-                }
-            }
+            
             
             // Update PPE compliance overview
             this.updatePPEComplianceOverview();
@@ -675,8 +637,7 @@ class UI {
         // Get all annotations for the current frame
         const boxes = this.viewer.annotationRenderer.getCurrentFrameAnnotations();
 
-        // Update compliance rate display
-        this.updateComplianceRate(boxes);
+
         
         // Update PPE compliance overview
         this.updatePPEComplianceOverview();
@@ -700,38 +661,7 @@ class UI {
         this.updatePPEDetails(selectedPersons);
     }
 
-    /**
-     * Update compliance rate display
-     */
-    updateComplianceRate(boxes) {
-        const complianceRateDisplay = document.getElementById('complianceRateDisplay');
-        if (complianceRateDisplay) {
-            let totalBoxes = 0;
-            let nonadherenceCount = 0;
 
-            // Sort boxes by ID to maintain consistency with PPE details display
-            const sortedBoxes = [...boxes].sort((a, b) => {
-                const idA = parseInt(a.id);
-                const idB = parseInt(b.id);
-                return idA - idB;
-            });
-
-            sortedBoxes.forEach(box => {
-                totalBoxes++;
-                const nonadherenceTexts = this.viewer.annotationRenderer.getNonadherenceTexts(box);
-                if (nonadherenceTexts.length > 0) {
-                    nonadherenceCount++;
-                }
-            });
-
-            if (totalBoxes > 0) {
-                const adherenceRate = ((totalBoxes - nonadherenceCount) / totalBoxes * 100).toFixed(1);
-                complianceRateDisplay.textContent = `${adherenceRate}% (${totalBoxes - nonadherenceCount}/${totalBoxes})`;
-            } else {
-                complianceRateDisplay.textContent = 'No data available';
-            }
-            }
-        }
         
     /**
      * Update PPE details
@@ -1425,6 +1355,107 @@ class UI {
 
     getOffsetY() {
         return this.offsetY;
+    }
+
+    /**
+     * Initialize panel content toggle listeners
+     */
+    initializePanelContentToggleListeners() {
+        // Overview panel toggle
+        const toggleOverviewPanel = document.getElementById('toggleOverviewPanel');
+        const overviewContent = document.getElementById('overviewContent');
+        
+        if (toggleOverviewPanel && overviewContent) {
+            toggleOverviewPanel.addEventListener('click', () => {
+                const isCollapsed = overviewContent.classList.contains('collapsed');
+                
+                if (isCollapsed) {
+                    // Expand panel
+                    overviewContent.classList.remove('collapsed');
+                    toggleOverviewPanel.textContent = '−';
+                    toggleOverviewPanel.classList.remove('collapsed');
+                } else {
+                    // Collapse panel
+                    overviewContent.classList.add('collapsed');
+                    toggleOverviewPanel.textContent = '+';
+                    toggleOverviewPanel.classList.add('collapsed');
+                }
+            });
+        }
+
+        // PPE details panel toggle
+        const togglePPEDetailsPanel = document.getElementById('togglePPEDetailsPanel');
+        const ppeContentWrapper = document.getElementById('ppeContentWrapper');
+        const ppeDetails = document.querySelector('.ppe-details');
+        
+        if (togglePPEDetailsPanel && ppeContentWrapper && ppeDetails) {
+            togglePPEDetailsPanel.addEventListener('click', () => {
+                const isCollapsed = ppeContentWrapper.classList.contains('collapsed');
+                
+                if (isCollapsed) {
+                    // Expand panel
+                    ppeContentWrapper.classList.remove('collapsed');
+                    ppeDetails.classList.remove('collapsed');
+                    togglePPEDetailsPanel.textContent = '−';
+                    togglePPEDetailsPanel.classList.remove('collapsed');
+                } else {
+                    // Collapse panel
+                    ppeContentWrapper.classList.add('collapsed');
+                    ppeDetails.classList.add('collapsed');
+                    togglePPEDetailsPanel.textContent = '+';
+                    togglePPEDetailsPanel.classList.add('collapsed');
+                }
+            });
+        }
+    }
+
+    /**
+     * Initialize main panel toggle listeners
+     */
+    initializeMainPanelToggleListeners() {
+        // Left panel toggle
+        const toggleLeftPanel = document.getElementById('toggleLeftPanel');
+        const leftPanelContent = document.getElementById('leftPanelContent');
+        
+        if (toggleLeftPanel && leftPanelContent) {
+            toggleLeftPanel.addEventListener('click', () => {
+                const isCollapsed = leftPanelContent.classList.contains('collapsed');
+                
+                if (isCollapsed) {
+                    // Expand panel
+                    leftPanelContent.classList.remove('collapsed');
+                    toggleLeftPanel.textContent = '−';
+                    toggleLeftPanel.classList.remove('collapsed');
+                } else {
+                    // Collapse panel
+                    leftPanelContent.classList.add('collapsed');
+                    toggleLeftPanel.textContent = '+';
+                    toggleLeftPanel.classList.add('collapsed');
+                }
+            });
+        }
+
+        // Right panel toggle
+        const toggleRightPanel = document.getElementById('toggleRightPanel');
+        const rightPanelContent = document.getElementById('detailedInfoContainer');
+        
+        if (toggleRightPanel && rightPanelContent) {
+            toggleRightPanel.addEventListener('click', () => {
+                const isCollapsed = rightPanelContent.classList.contains('collapsed');
+                
+                if (isCollapsed) {
+                    // Expand panel
+                    rightPanelContent.classList.remove('collapsed');
+                    toggleRightPanel.textContent = '−';
+                    toggleRightPanel.classList.remove('collapsed');
+                } else {
+                    // Collapse panel
+                    rightPanelContent.classList.add('collapsed');
+                    toggleRightPanel.textContent = '+';
+                    toggleRightPanel.classList.add('collapsed');
+                }
+            });
+        }
     }
 }
 

@@ -107,12 +107,12 @@ body {
 }
 
 .close-btn {
-    color: #dc3545;
+    color: #878787;
     font-weight: bold;
 }
 
 .close-btn:hover {
-    background: #dc3545;
+    background: #3a3838;
     color: white;
 }
 
@@ -718,7 +718,7 @@ body {
 .canvas-top-controls {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     background: #DDF1FF;
     padding: 12px 20px;
     border-radius: 8px 8px 0 0;
@@ -732,6 +732,11 @@ body {
     align-items: center;
     gap: 12px;
     margin-left: 12px;
+}
+
+.toggle-control.centered-toggle {
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .toggle-control label {
@@ -762,7 +767,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: #696a6b;
     transition: 0.3s;
     border-radius: 24px;
     display: flex;
@@ -780,11 +785,11 @@ body {
     background-color: white;
     transition: 0.3s;
     border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px rgba(85, 85, 85, 0.2);
 }
 
 .toggle-input:checked + .toggle-label {
-    background-color: #28a745;
+    background-color: #24ff03;
 }
 
 .toggle-input:checked + .toggle-label:before {
@@ -792,18 +797,9 @@ body {
 }
 
 .toggle-input:focus + .toggle-label {
-    box-shadow: 0 0 1px #28a745;
+    box-shadow: 0 0 1px #0D4495;
 }
 
-.toggle-label:hover {
-    background-color: rgba(255, 255, 255, 0.4);
-}
-
-.toggle-input:checked + .toggle-label:hover {
-    background-color: #2fb344;
-}
-
-/* 保持原有的checkbox样式以兼容性 */
 .control-buttons input[type="checkbox"] {
     width: 16px;
     height: 16px;
@@ -817,12 +813,13 @@ body {
 .ppe-details-container {
     flex: 1;
     padding: 20px;
+    padding-top: 60px; /* 增加顶部间距，避免遮挡三角形符号 */
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 20px; /* 统一间距 */
     min-height: 0;
-    height: calc(100vh - 80px);
+    height: calc(100vh - 100px);
 }
 
 /* ========================================
@@ -835,7 +832,52 @@ body {
     border: 1px solid rgba(0, 123, 255, 0.2);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     padding: 16px;
+}
 
+.overview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.overview-content {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.overview-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/* 面板切换按钮样式 */
+.panel-toggle-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    color: #666;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+}
+
+.panel-toggle-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+.panel-toggle-btn.collapsed {
+    transform: rotate(180deg);
 }
 
 .overview-title {
@@ -943,6 +985,26 @@ body {
     flex-direction: column;
     overflow: hidden;
     min-height: 400px; /* 减少最小高度 */
+}
+
+.ppe-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.ppe-content-wrapper {
+    transition: all 0.3s ease;
+    overflow: hidden;
+    flex: 1;
+}
+
+.ppe-content-wrapper.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
 }
 
 .ppe-title {

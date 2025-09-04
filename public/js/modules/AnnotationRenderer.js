@@ -384,8 +384,28 @@ class AnnotationRenderer {
                     this.viewer.ctx.arc(circleCenterX, circleCenterY, circleRadius, 0, 2 * Math.PI);
                     this.viewer.ctx.fill();
                     
-                    // Draw PPE icon
-                    this.viewer.ctx.drawImage(this.iconImages[classType], currentX, ppeIconY, ppeIconSize, ppeIconSize);
+                    // Draw PPE icon with proper aspect ratio
+                    const icon = this.iconImages[classType];
+                    const iconAspectRatio = icon.naturalWidth / icon.naturalHeight;
+                    
+                    let drawWidth, drawHeight;
+                    if (iconAspectRatio > 1) {
+                        // Wide icon - fit to width
+                        drawWidth = ppeIconSize;
+                        drawHeight = ppeIconSize / iconAspectRatio;
+                    } else {
+                        // Tall icon - fit to height
+                        drawHeight = ppeIconSize;
+                        drawWidth = ppeIconSize * iconAspectRatio;
+                    }
+                    
+                    // Center the icon within the circle
+                    const iconOffsetX = (ppeIconSize - drawWidth) / 2;
+                    const iconOffsetY = (ppeIconSize - drawHeight) / 2;
+                    const iconX = currentX + iconOffsetX;
+                    const iconY = ppeIconY + iconOffsetY;
+                    
+                    this.viewer.ctx.drawImage(icon, iconX, iconY, drawWidth, drawHeight);
                     
                     currentX += ppeIconSize + 25; // Move to the next icon position, increase spacing
                     } else {
@@ -414,8 +434,28 @@ class AnnotationRenderer {
                             this.viewer.ctx.arc(circleCenterX, circleCenterY, circleRadius, 0, 2 * Math.PI);
                             this.viewer.ctx.fill();
                             
-                            // Draw PPE icon
-                            this.viewer.ctx.drawImage(this.iconImages[classType], currentX, ppeIconY, ppeIconSize, ppeIconSize);
+                            // Draw PPE icon with proper aspect ratio
+                            const icon = this.iconImages[classType];
+                            const iconAspectRatio = icon.naturalWidth / icon.naturalHeight;
+                            
+                            let drawWidth, drawHeight;
+                            if (iconAspectRatio > 1) {
+                                // Wide icon - fit to width
+                                drawWidth = ppeIconSize;
+                                drawHeight = ppeIconSize / iconAspectRatio;
+                            } else {
+                                // Tall icon - fit to height
+                                drawHeight = ppeIconSize;
+                                drawWidth = ppeIconSize * iconAspectRatio;
+                            }
+                            
+                            // Center the icon within the circle
+                            const iconOffsetX = (ppeIconSize - drawWidth) / 2;
+                            const iconOffsetY = (ppeIconSize - drawHeight) / 2;
+                            const iconX = currentX + iconOffsetX;
+                            const iconY = ppeIconY + iconOffsetY;
+                            
+                            this.viewer.ctx.drawImage(icon, iconX, iconY, drawWidth, drawHeight);
                             
                             currentX += ppeIconSize + 25;
                         }
@@ -618,11 +658,7 @@ class AnnotationRenderer {
             const adherenceRate = ((totalBoxes - nonadherenceCount) / totalBoxes * 100).toFixed(1);
             this.viewer.updateInfoLabel(`Compliance Rate: ${adherenceRate}% (${totalBoxes - nonadherenceCount}/${totalBoxes})`, nonadherenceCount > 0);
             
-            // Also update the compliance rate display in the detailed info area
-            const complianceRateDisplay = document.getElementById('complianceRateDisplay');
-            if (complianceRateDisplay) {
-                complianceRateDisplay.textContent = `${adherenceRate}% (${totalBoxes - nonadherenceCount}/${totalBoxes})`;
-            }
+
             
             // Update PPE compliance overview
             if (this.viewer.ui) {
@@ -631,11 +667,7 @@ class AnnotationRenderer {
         } else {
             this.viewer.updateInfoLabel('No PPE detected in this frame');
             
-            // Also update the compliance rate display in the detailed info area
-            const complianceRateDisplay = document.getElementById('complianceRateDisplay');
-            if (complianceRateDisplay) {
-                complianceRateDisplay.textContent = 'No data available';
-            }
+
             
             // Update PPE compliance overview
             if (this.viewer.ui) {

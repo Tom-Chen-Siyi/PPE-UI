@@ -9,9 +9,9 @@
 <body>
     <div class="app-container">
         <div class="left-panel" id="leftPanel">
-            <!-- X close button -->
+            <!-- Left arrow close button -->
             <div class="panel-toggle">
-                <button id="closeLeftPanel" class="toggle-btn close-btn">✕</button>
+                <button id="closeLeftPanel" class="toggle-btn close-btn">◀</button>
             </div>
             
             <div class="upload-section">
@@ -90,25 +90,11 @@
             <div class="video-section">
                 <!-- Canvas上方的控制区域 -->
                 <div class="canvas-top-controls">
-                    <div class="toggle-control">
-                        <label for="alertToggle">Detect PPE Non Compliance:</label>
+                    <div class="toggle-control centered-toggle">
+                        <label for="alertToggle">Show PPE Non-Compliance</label>
                         <div class="toggle-switch">
                             <input type="checkbox" id="alertToggle" class="toggle-input">
                             <label for="alertToggle" class="toggle-label"></label>
-                        </div>
-                    </div>
-                    <div class="toggle-control">
-                        <label for="non-compliance-metrics">PPE Non Compliance Metrics:</label>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="non-compliance-metrics" class="toggle-input">
-                            <label for="non-compliance-metrics" class="toggle-label"></label>
-                        </div>
-                    </div>
-                    <div class="toggle-control">
-                        <label for="showAllBoxesToggle">Show All:</label>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="showAllBoxesToggle" class="toggle-input">
-                            <label for="showAllBoxesToggle" class="toggle-label"></label>
                         </div>
                     </div>
                 </div>
@@ -151,69 +137,75 @@
 
         <!-- 右侧PPE详细栏 -->
         <div class="right-panel" id="rightPanel">
-            <!-- X close button -->
+            <!-- Right arrow close button -->
             <div class="panel-toggle">
-                <button id="closeRightPanel" class="toggle-btn close-btn">✕</button>
+                <button id="closeRightPanel" class="toggle-btn close-btn">▶</button>
             </div>
             
             <!-- PPE详细信息显示区域 -->
             <div id="detailedInfoContainer" class="ppe-details-container">
                 <!-- PPE Compliance Overview -->
                 <div class="ppe-overview">
-                    <div class="overview-title">PPE Compliance Overview</div>
-                    <div class="overview-grid">
-                        <div class="overview-card" id="maskCard">
-                            <div class="overview-icon">
-                                <img src="icon/mask.png" alt="Mask" class="ppe-icon">
+                    <div class="overview-header">
+                        <div class="overview-title">PPE Compliance Overview</div>
+                        <button class="panel-toggle-btn" id="toggleOverviewPanel">−</button>
+                    </div>
+                    <div class="overview-content" id="overviewContent">
+                        <div class="overview-grid">
+                            <div class="overview-card" id="maskCard">
+                                <div class="overview-icon">
+                                    <img src="icon/mask.png" alt="Mask" class="ppe-icon">
+                                </div>
+                                <div class="overview-text">
+                                    <span id="maskCompliant">0/0</span>
+                                    <span class="overview-label">Compliant</span>
+                                </div>
                             </div>
-                            <div class="overview-text">
-                                <span id="maskCompliant">0/0</span>
-                                <span class="overview-label">Compliant</span>
+                            <div class="overview-card" id="glovesCard">
+                                <div class="overview-icon">
+                                    <img src="icon/gloves.png" alt="Gloves" class="ppe-icon">
+                                </div>
+                                <div class="overview-text">
+                                    <span id="glovesCompliant">0/0</span>
+                                    <span class="overview-label">Compliant</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="overview-card" id="glovesCard">
-                            <div class="overview-icon">
-                                <img src="icon/gloves.png" alt="Gloves" class="ppe-icon">
+                            <div class="overview-card" id="eyewearCard">
+                                <div class="overview-icon">
+                                    <img src="icon/eyewear.png" alt="Eyewear" class="ppe-icon">
+                                </div>
+                                <div class="overview-text">
+                                    <span id="eyewearCompliant">0/0</span>
+                                    <span class="overview-label">Compliant</span>
+                                </div>
                             </div>
-                            <div class="overview-text">
-                                <span id="glovesCompliant">0/0</span>
-                                <span class="overview-label">Compliant</span>
-                            </div>
-                        </div>
-                        <div class="overview-card" id="eyewearCard">
-                            <div class="overview-icon">
-                                <img src="icon/eyewear.png" alt="Eyewear" class="ppe-icon">
-                            </div>
-                            <div class="overview-text">
-                                <span id="eyewearCompliant">0/0</span>
-                                <span class="overview-label">Compliant</span>
-                            </div>
-                        </div>
-                        <div class="overview-card" id="gownCard">
-                            <div class="overview-icon">
-                                <img src="icon/gown.png" alt="Gown" class="ppe-icon">
-                            </div>
-                            <div class="overview-text">
-                                <span id="gownCompliant">0/0</span>
-                                <span class="overview-label">Compliant</span>
+                            <div class="overview-card" id="gownCard">
+                                <div class="overview-icon">
+                                    <img src="icon/gown.png" alt="Gown" class="ppe-icon">
+                                </div>
+                                <div class="overview-text">
+                                    <span id="gownCompliant">0/0</span>
+                                    <span class="overview-label">Compliant</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- 合规率显示 -->
-                <div class="compliance-rate">
-                    <div class="compliance-title">Compliance Rate</div>
-                    <div id="complianceRateDisplay" class="compliance-value">No data available</div>
-                </div>
+
                 
                 <!-- PPE不规范明细 -->
                 <div class="ppe-details">
-                    <div class="ppe-title">
-                        <span>PPE Compliance by Provider</span>
+                    <div class="ppe-header">
+                        <div class="ppe-title">
+                            <span>PPE Compliance by Provider</span>
+                        </div>
+                        <button class="panel-toggle-btn" id="togglePPEDetailsPanel">−</button>
                     </div>
-                    <div id="ppeDetailsDisplay" class="ppe-content">
-                        Please select a frame to view the PPE non-compliance details
+                    <div class="ppe-content-wrapper" id="ppeContentWrapper">
+                        <div id="ppeDetailsDisplay" class="ppe-content">
+                            Please select a frame to view the PPE non-compliance details
+                        </div>
                     </div>
                 </div>
             </div>
