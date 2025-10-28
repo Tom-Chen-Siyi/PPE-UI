@@ -113,8 +113,8 @@ class AnnotationRenderer {
      */
     getCurrentFrameAnnotations() {
         const currentVideoFrame = this.viewer.videoPlayer.getCurrentFrame();
-        
-        const jsonFrameNumber = Math.floor((currentVideoFrame - 1) / 2) + 1;
+        const jsonFrameNumber = currentVideoFrame;
+        // const jsonFrameNumber = Math.floor((currentVideoFrame - 1) / 2) + 1;
         const frameKey = jsonFrameNumber.toString().padStart(5, '0');
         
         console.log(`Video frame: ${currentVideoFrame}, JSON frame: ${jsonFrameNumber}, Frame key: ${frameKey}`);
@@ -209,8 +209,11 @@ class AnnotationRenderer {
         if (!this.showAllBoxesEnabled) return;
 
         const boxes = this.getCurrentFrameAnnotations();
-        
+
+        const selectedPPE = this.viewer.ui && this.viewer.ui.selectedPPE ? this.viewer.ui.selectedPPE : null;
+
         boxes.forEach(bbox => {
+            if (selectedPPE && !this.boxMatchesSelectedPPE(bbox, selectedPPE)) return;
             const color = this.getBoxColor(bbox.class);
             this.drawBoundingBox(bbox, color, true);
         });
@@ -235,31 +238,46 @@ class AnnotationRenderer {
         }
         
         // Use Promise.all to wait for all icons to be drawn
+        // If a PPE filter is active, only consider boxes that match the selected PPE
+        const selectedPPE = this.viewer.ui && this.viewer.ui.selectedPPE ? this.viewer.ui.selectedPPE : null;
+
         const iconPromises = boxes.map(async bbox => {
+            if (selectedPPE && !this.boxMatchesSelectedPPE(bbox, selectedPPE)) {
+                // Skip boxes that don't match the selected PPE
+                return;
+            }
             const nonadherenceTexts = this.getNonadherenceTexts(bbox);
             console.log('Box ID:', bbox.id, 'Class:', bbox.class, 'ClassTypes:', bbox.classTypes, 'Nonadherence texts:', nonadherenceTexts);
             
             if (nonadherenceTexts.length > 0) {
-                console.log('Drawing exclamation icon for box ID:', bbox.id);
-                
-                // Check if clicked, if so draw red box, otherwise draw blue box
+                console.log('Drawing exclamation/icon for box ID:', bbox.id);
+
+                // We intentionally do NOT draw the bounding box here (hide bbox) while keeping icons and badges
                 const iconKey = `${bbox.id}-${bbox.class}`;
-                const isClicked = this.clickedExclamationIcons.has(iconKey);
-                
-                if (isClicked) {
-                    // Draw red box (clicked box)
-                    this.drawSelectedBoundingBoxForPerson(bbox);
-                } else {
-                // Draw bounding box (using red)
-                this.drawBoundingBox(bbox, [255, 0, 0], false);
-                }
-                
-                // Draw exclamation icon
+                // Draw exclamation icon / badge and any PPE icons
                 await this.drawExclamationIcon(bbox, nonadherenceTexts);
             }
         });
         
         await Promise.all(iconPromises);
+    }
+
+    /**
+     * Check whether a bbox has non-compliance for the selected PPE type
+     * selectedPPE is one of: 'mask','gloves','eyewear','gown'
+     */
+    boxMatchesSelectedPPE(bbox, selectedPPE) {
+        if (!bbox || !bbox.classTypes || !Array.isArray(bbox.classTypes)) return false;
+
+        const map = {
+            'mask': ['ma', 'mi'],
+            'gloves': ['ha'],
+            'eyewear': ['ea', 'ei'],
+            'gown': ['ga', 'gi']
+        };
+
+        const types = map[selectedPPE] || [];
+        return bbox.classTypes.some(cls => types.includes(cls));
     }
 
     /**
@@ -285,29 +303,12 @@ class AnnotationRenderer {
     }
 
     /**
-     * Draw exclamation icon
+     * Draw exclamation icon centered in the bbox. When clicked, replace icon with a centered red badge showing "ID: X".
      */
     async drawExclamationIcon(bbox, nonadherenceTexts) {
-        console.log('drawExclamationIcon called for box ID:', bbox.id);
-        console.log('Icons loaded:', this.iconsLoaded);
-        console.log('Alert icon available:', !!this.iconImages['alert']);
-        
-        // If icons are not loaded, try to reload
+        // Ensure icons are available; try to reload silently if needed
         if (!this.iconsLoaded || !this.iconImages['alert']) {
-            console.warn('Icons not loaded or alert icon not available, attempting to reload...');
-            try {
-                await this.reloadIcons();
-                console.log('Icons reloaded successfully');
-            } catch (error) {
-                console.error('Failed to reload icons:', error);
-                return;
-            }
-        }
-        
-        // Check again if icons are available
-        if (!this.iconImages['alert']) {
-            console.error('Alert icon still not available after reload');
-            return;
+            try { await this.reloadIcons(); } catch (e) { /* fallback to drawing */ }
         }
 
         const x = bbox.x / this.viewer.scaleX + this.viewer.offsetX;
@@ -315,170 +316,105 @@ class AnnotationRenderer {
         const w = bbox.w / this.viewer.scaleX;
         const h = bbox.h / this.viewer.scaleY;
 
-        // Get canvas boundaries
         const canvasWidth = this.viewer.canvas.width;
         const canvasHeight = this.viewer.canvas.height;
 
-        // Draw exclamation icon in the top-left corner of the bounding box
-        const iconSize = 28;
-        let iconX = x - iconSize / 2;
-        let iconY = y - iconSize / 2;
-        
-        // Boundary check: ensure exclamation icon is within canvas
-        if (iconX < 0) iconX = 0;
-        if (iconY < 0) iconY = 0;
-        if (iconX + iconSize > canvasWidth) iconX = canvasWidth - iconSize;
-        if (iconY + iconSize > canvasHeight) iconY = canvasHeight - iconSize;
-        
-        console.log('Drawing exclamation icon at:', iconX, iconY, 'for box at:', x, y);
-        
-        // Check if clicked (to control PPE icon display/hide)
+        const iconSize = 36;
+        let iconX = x + (w / 2) - (iconSize / 2);
+        let iconY = y + (h / 2) - (iconSize / 2);
+
+        iconX = Math.max(0, Math.min(iconX, canvasWidth - iconSize));
+        iconY = Math.max(0, Math.min(iconY, canvasHeight - iconSize));
+
         const iconKey = `${bbox.id}-${bbox.class}`;
         const isClicked = this.clickedExclamationIcons.has(iconKey);
-        
-        // Draw exclamation icon
-        this.viewer.ctx.drawImage(this.iconImages['alert'], iconX, iconY, iconSize, iconSize);
-        console.log('Exclamation icon drawn successfully');
-        
-        // If clicked and there are non-compliance types, draw corresponding PPE icons on the right of the exclamation mark
-        if (isClicked && bbox.classTypes && bbox.classTypes.length > 0) {
-            const ppeIconSize = 28; // Larger icon
-            let currentX = iconX + iconSize + 10; // Start on the right of the exclamation mark
-            let ppeIconY = iconY; // Align with exclamation mark
-            
-            // Boundary check: ensure PPE icons are within canvas
-            if (currentX + ppeIconSize > canvasWidth) {
-                // If not enough space on the right, try to put it on the left
-                currentX = iconX - ppeIconSize - 10;
-                if (currentX < 0) {
-                    // If not enough space on the left, put it inside the box
-                    currentX = x + 5;
-                    ppeIconY = y + 5;
+
+        if (!isClicked) {
+            // Draw the alert (exclamation) icon only when NOT clicked
+            if (this.iconImages['alert']) {
+                this.viewer.ctx.drawImage(this.iconImages['alert'], iconX, iconY, iconSize, iconSize);
+            } else {
+                // fallback circle with '!'
+                this.viewer.ctx.fillStyle = '#FFC107';
+                this.viewer.ctx.beginPath();
+                this.viewer.ctx.arc(iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2, 0, Math.PI * 2);
+                this.viewer.ctx.fill();
+                this.viewer.ctx.fillStyle = 'black';
+                this.viewer.ctx.font = 'bold 18px Arial';
+                this.viewer.ctx.textAlign = 'center';
+                this.viewer.ctx.textBaseline = 'middle';
+                this.viewer.ctx.fillText('!', iconX + iconSize / 2, iconY + iconSize / 2);
+            }
+        } else {
+            // When clicked: draw centered red badge with "ID: X" (no exclamation)
+            // Smaller badge: keep readable but more compact
+            const badgeRadius = Math.max(12, Math.min(28, Math.floor(iconSize * 0.6)));
+            const badgeCX = iconX + iconSize / 2;
+            const badgeCY = iconY + iconSize / 2;
+
+            this.viewer.ctx.fillStyle = 'rgb(237,67,70)';
+            this.viewer.ctx.beginPath();
+            this.viewer.ctx.arc(badgeCX, badgeCY, badgeRadius, 0, Math.PI * 2);
+            this.viewer.ctx.fill();
+
+            this.viewer.ctx.fillStyle = 'white';
+            this.viewer.ctx.font = 'bold 12px Arial';
+            this.viewer.ctx.textAlign = 'center';
+            this.viewer.ctx.textBaseline = 'middle';
+            this.viewer.ctx.fillText(`ID: ${bbox.id}`, badgeCX, badgeCY);
+
+            // Draw PPE icons centered along top edge when clicked
+            if (bbox.classTypes && bbox.classTypes.length > 0) {
+                const ppeIconSize = 26;
+                const spacing = 12;
+
+                const selectedPPE = this.viewer.ui && this.viewer.ui.selectedPPE ? this.viewer.ui.selectedPPE : null;
+                const allowedMap = {
+                    mask: ['ma', 'mi'],
+                    gloves: ['ha'],
+                    eyewear: ['ea', 'ei'],
+                    gown: ['ga', 'gi']
+                };
+
+                const iconsToDraw = [];
+                bbox.classTypes.forEach(classType => {
+                    if (selectedPPE && allowedMap[selectedPPE] && !allowedMap[selectedPPE].includes(classType)) return;
+                    if (this.iconImages[classType]) iconsToDraw.push(classType);
+                });
+
+                if (iconsToDraw.length > 0) {
+                    const totalWidth = iconsToDraw.length * ppeIconSize + (iconsToDraw.length - 1) * spacing;
+                    let startX = x + (w / 2) - (totalWidth / 2);
+                    let iconY = y - ppeIconSize - 8;
+                    if (iconY < 0) iconY = y + 6;
+                    startX = Math.max(4, Math.min(startX, canvasWidth - totalWidth - 4));
+
+                    iconsToDraw.forEach((classType, idx) => {
+                        const centerX = startX + idx * (ppeIconSize + spacing) + ppeIconSize / 2;
+                        const centerY = iconY + ppeIconSize / 2;
+
+                        let circleColor = (classType === 'mi' || classType === 'gi' || classType === 'ei') ? '#E1A61E' : 'rgb(237,67,70)';
+                        const circleRadius = ppeIconSize / 2 + 6;
+                        this.viewer.ctx.fillStyle = circleColor;
+                        this.viewer.ctx.beginPath();
+                        this.viewer.ctx.arc(centerX, centerY, circleRadius, 0, Math.PI * 2);
+                        this.viewer.ctx.fill();
+
+                        const iconImg = this.iconImages[classType];
+                        const aspect = iconImg.naturalWidth / iconImg.naturalHeight;
+                        let drawW = ppeIconSize, drawH = ppeIconSize;
+                        if (aspect > 1) drawH = ppeIconSize / aspect; else drawW = ppeIconSize * aspect;
+                        const drawX = startX + idx * (ppeIconSize + spacing) + (ppeIconSize - drawW) / 2;
+                        const drawY = iconY + (ppeIconSize - drawH) / 2;
+                        this.viewer.ctx.drawImage(iconImg, drawX, drawY, drawW, drawH);
+                    });
                 }
             }
-            
-            // Draw all non-compliant PPE icons
-            bbox.classTypes.forEach(classType => {
-                if (this.iconImages[classType]) {
-                    // Check if current icon would exceed boundaries
-                    if (currentX + ppeIconSize <= canvasWidth && currentX >= 0 && 
-                        ppeIconY + ppeIconSize <= canvasHeight && ppeIconY >= 0) {
-                        
-                    // Determine circle color based on PPE status
-                    let circleColor;
-                    if (classType === 'mi' || classType === 'gi' || classType === 'ei') {
-                        // Incomplete status - Yellow
-                        circleColor = '#E1A61E';
-                    } else {
-                        // Absent status - Red
-                        circleColor = 'rgb(237,67,70)';
-                    }
-                    
-                    // Draw circular background with appropriate color
-                    const circleRadius = ppeIconSize / 2 + 8; // Slightly larger than icon
-                    const circleCenterX = currentX + ppeIconSize / 2;
-                    const circleCenterY = ppeIconY + ppeIconSize / 2;
-                    
-                    this.viewer.ctx.fillStyle = circleColor;
-                    this.viewer.ctx.beginPath();
-                    this.viewer.ctx.arc(circleCenterX, circleCenterY, circleRadius, 0, 2 * Math.PI);
-                    this.viewer.ctx.fill();
-                    
-                    // Draw PPE icon with proper aspect ratio
-                    const icon = this.iconImages[classType];
-                    const iconAspectRatio = icon.naturalWidth / icon.naturalHeight;
-                    
-                    let drawWidth, drawHeight;
-                    if (iconAspectRatio > 1) {
-                        // Wide icon - fit to width
-                        drawWidth = ppeIconSize;
-                        drawHeight = ppeIconSize / iconAspectRatio;
-                    } else {
-                        // Tall icon - fit to height
-                        drawHeight = ppeIconSize;
-                        drawWidth = ppeIconSize * iconAspectRatio;
-                    }
-                    
-                    // Center the icon within the circle
-                    const iconOffsetX = (ppeIconSize - drawWidth) / 2;
-                    const iconOffsetY = (ppeIconSize - drawHeight) / 2;
-                    const iconX = currentX + iconOffsetX;
-                    const iconY = ppeIconY + iconOffsetY;
-                    
-                    this.viewer.ctx.drawImage(icon, iconX, iconY, drawWidth, drawHeight);
-                    
-                    currentX += ppeIconSize + 25; // Move to the next icon position, increase spacing
-                    } else {
-                        // If not enough space, try to wrap or adjust position
-                        currentX = x + 5;
-                        ppeIconY = y + h - ppeIconSize - 5;
-                        
-                        if (ppeIconY >= 0 && currentX + ppeIconSize <= canvasWidth) {
-                            // Determine circle color based on PPE status
-                            let circleColor;
-                            if (classType === 'mi' || classType === 'gi' || classType === 'ei') {
-                                // Incomplete status - Yellow
-                                circleColor = '#E1A61E';
-                            } else {
-                                // Absent status - Red
-                                circleColor = 'rgb(237,67,70)';
-                            }
-                            
-                            // Draw circular background with appropriate color
-                            const circleRadius = ppeIconSize / 2 + 8;
-                            const circleCenterX = currentX + ppeIconSize / 2;
-                            const circleCenterY = ppeIconY + ppeIconSize / 2;
-                            
-                            this.viewer.ctx.fillStyle = circleColor;
-                            this.viewer.ctx.beginPath();
-                            this.viewer.ctx.arc(circleCenterX, circleCenterY, circleRadius, 0, 2 * Math.PI);
-                            this.viewer.ctx.fill();
-                            
-                            // Draw PPE icon with proper aspect ratio
-                            const icon = this.iconImages[classType];
-                            const iconAspectRatio = icon.naturalWidth / icon.naturalHeight;
-                            
-                            let drawWidth, drawHeight;
-                            if (iconAspectRatio > 1) {
-                                // Wide icon - fit to width
-                                drawWidth = ppeIconSize;
-                                drawHeight = ppeIconSize / iconAspectRatio;
-                            } else {
-                                // Tall icon - fit to height
-                                drawHeight = ppeIconSize;
-                                drawWidth = ppeIconSize * iconAspectRatio;
-                            }
-                            
-                            // Center the icon within the circle
-                            const iconOffsetX = (ppeIconSize - drawWidth) / 2;
-                            const iconOffsetY = (ppeIconSize - drawHeight) / 2;
-                            const iconX = currentX + iconOffsetX;
-                            const iconY = ppeIconY + iconOffsetY;
-                            
-                            this.viewer.ctx.drawImage(icon, iconX, iconY, drawWidth, drawHeight);
-                            
-                            currentX += ppeIconSize + 25;
-                        }
-                    }
-                }
-            });
         }
-        
-        // Store exclamation icon position information for click detection
-        if (!this.exclamationIcons) {
-            this.exclamationIcons = [];
-        }
-        
-        this.exclamationIcons.push({
-            x: iconX,
-            y: iconY,
-            size: iconSize,
-            bbox: bbox,
-            texts: nonadherenceTexts,
-            iconKey: iconKey
-        });
-        
-        console.log('Exclamation icon added to tracking list');
+
+        // Track icon/badge for click detection
+        if (!this.exclamationIcons) this.exclamationIcons = [];
+        this.exclamationIcons.push({ x: iconX, y: iconY, size: iconSize, bbox, texts: nonadherenceTexts, iconKey });
     }
 
     /**
@@ -514,8 +450,7 @@ class AnnotationRenderer {
             this.viewer.ctx.strokeRect(x, y, w, h);
             this.viewer.ctx.setLineDash([]); // Reset dash
             
-        // Draw ID label (bottom-right)
-            this.drawIdLabel(x, y, w, h, selectedPerson.id);
+        // Note: ID label is now shown on the centered badge (handled in drawExclamationIcon)
     }
     
     /**

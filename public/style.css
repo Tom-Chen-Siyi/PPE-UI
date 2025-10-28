@@ -895,21 +895,33 @@ body {
 }
 
 .overview-card {
-    background:#0D4495;
-    color: white;
+    background: #DDF1FF; /* default unselected background */
+    color: #0D4495;      /* default text color (dark blue) */
     border-radius: 6px;
     padding: 12px 8px;
     display: flex;
     align-items: center;
     gap: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+    transition: all 0.22s ease;
 }
 
 .overview-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 12px rgba(13, 68, 149, 0.08);
 }
+
+/* Selected overview card */
+.overview-card.selected {
+    background: #0D4495; /* dark blue when selected */
+    color: white;
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 8px 20px rgba(13, 68, 149, 0.15);
+}
+
+/* Ensure icons invert appropriately based on card background */
+.overview-card .ppe-icon { filter: none; }
+.overview-card.selected .ppe-icon { filter: brightness(0) invert(1); }
 
 .overview-icon {
     flex-shrink: 0;

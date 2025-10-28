@@ -9,6 +9,7 @@ class UI {
         this.lastClickX = null;
         this.lastClickY = null;
         this.selectedPersonId = null; // Track the ID of the currently selected person
+        this.selectedPPE = null; // Persist which PPE card is selected across frames ('mask','gloves','eyewear','gown')
         
         // Canvas related
         this.canvas = document.getElementById('videoCanvas');
@@ -128,6 +129,9 @@ class UI {
 
         // Window resize
         window.addEventListener('resize', () => this.handleResize());
+
+        // Initialize overview card click listeners
+        this.initializeOverviewCardListeners();
     }
 
     /**
@@ -681,35 +685,58 @@ class UI {
             
             sortedPersons.forEach((person, index) => {
                 const nonadherenceTexts = this.viewer.annotationRenderer.getNonadherenceTexts(person);
-                
-                if (nonadherenceTexts.length > 0) {
+
+                // If a PPE filter is active, show only that PPE card (even if compliant)
+                if (this.selectedPPE) {
+                    const ppeStatus = this.getPPEStatusForPerson(person);
+                    const iconMap = {
+                        mask: 'icon/mask.png',
+                        gloves: 'icon/gloves.png',
+                        gown: 'icon/gown.png',
+                        eyewear: 'icon/eyewear.png'
+                    };
+
+                    const statusForSelected = ppeStatus[this.selectedPPE];
+
+                    // Only render members who have the selected PPE data (or if clicked selection uses only non-compliant persons)
+                    // We preserve the previous behavior where callers pass only relevant persons when needed.
                     detailsHTML += `<div class="member-compliance-section">`;
                     detailsHTML += `<div class="member-title">Member ID: ${person.id}</div>`;
                     detailsHTML += `<div class="ppe-status-grid">`;
-                    
-                    // Create status cards only for non-compliant PPE types
-                    const ppeStatus = this.getPPEStatusForPerson(person);
-                    
-                    // Only add cards for non-compliant items
-                    if (ppeStatus.mask.status !== 'compliant') {
-                        detailsHTML += this.createPPEStatusCard('mask', ppeStatus.mask, 'icon/mask.png');
-                    }
-                    
-                    if (ppeStatus.gloves.status !== 'compliant') {
-                        detailsHTML += this.createPPEStatusCard('gloves', ppeStatus.gloves, 'icon/gloves.png');
-                    }
-                    
-                    if (ppeStatus.gown.status !== 'compliant') {
-                        detailsHTML += this.createPPEStatusCard('gown', ppeStatus.gown, 'icon/gown.png');
-                    }
-                    
-                    if (ppeStatus.eyewear.status !== 'compliant') {
-                        detailsHTML += this.createPPEStatusCard('eyewear', ppeStatus.eyewear, 'icon/eyewear.png');
-                    }
-                    
+                    detailsHTML += this.createPPEStatusCard(this.selectedPPE, statusForSelected, iconMap[this.selectedPPE]);
                     detailsHTML += `</div>`;
                     detailsHTML += `</div>`;
-                } 
+                } else {
+                    // Default behaviour: only show non-compliant cards
+                    if (nonadherenceTexts.length > 0) {
+                        detailsHTML += `<div class="member-compliance-section">`;
+                        detailsHTML += `<div class="member-title">Member ID: ${person.id}</div>`;
+                        detailsHTML += `<div class="ppe-status-grid">`;
+
+                        // Create status cards only for non-compliant PPE types
+                        const ppeStatus = this.getPPEStatusForPerson(person);
+
+                        // Only add cards for non-compliant items
+                        if (ppeStatus.mask.status !== 'compliant') {
+                            detailsHTML += this.createPPEStatusCard('mask', ppeStatus.mask, 'icon/mask.png');
+                        }
+
+                        if (ppeStatus.gloves.status !== 'compliant') {
+                            detailsHTML += this.createPPEStatusCard('gloves', ppeStatus.gloves, 'icon/gloves.png');
+                        }
+
+                        if (ppeStatus.gown.status !== 'compliant') {
+                            detailsHTML += this.createPPEStatusCard('gown', ppeStatus.gown, 'icon/gown.png');
+                        }
+
+                        if (ppeStatus.eyewear.status !== 'compliant') {
+                            detailsHTML += this.createPPEStatusCard('eyewear', ppeStatus.eyewear, 'icon/eyewear.png');
+                        }
+
+                        detailsHTML += `</div>`;
+                        detailsHTML += `</div>`;
+                    }
+                }
             });
             
             ppeDetailsDisplay.innerHTML = detailsHTML;
@@ -1407,6 +1434,125 @@ class UI {
                 }
             });
         }
+    }
+
+    /**
+     * Initialize click listeners for PPE overview cards (mask/gloves/eyewear/gown)
+     */
+    initializeOverviewCardListeners() {
+        const cardIds = ['maskCard', 'glovesCard', 'eyewearCard', 'gownCard'];
+
+        // Map of colored and blue icons
+        const iconMap = {
+            'maskCard': 'icon/mask.png',
+            'glovesCard': 'icon/gloves.png',
+            'eyewearCard': 'icon/eyewear.png',
+            'gownCard': 'icon/gown.png'
+        };
+        const blueMap = {
+            'maskCard': 'icon/mask_blue.png',
+            'glovesCard': 'icon/gloves_blue.png',
+            'eyewearCard': 'icon/eyewear_blue.png',
+            'gownCard': 'icon/gown_blue.png'
+        };
+
+        const setCardIcon = (cardEl, selected) => {
+            if (!cardEl) return;
+            const img = cardEl.querySelector('.ppe-icon');
+            if (!img) return;
+            const id = cardEl.id;
+            img.src = selected ? (iconMap[id] || img.src) : (blueMap[id] || img.src);
+        };
+
+        // Initialize all cards to blue icons by default
+        cardIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) setCardIcon(el, false);
+        });
+
+        cardIds.forEach(cardId => {
+            const card = document.getElementById(cardId);
+            if (card) {
+                card.addEventListener('click', async (e) => {
+                    // Toggle selection
+                    const alreadySelected = card.classList.contains('selected');
+
+                    // Clear any existing selection visually
+                    cardIds.forEach(id => {
+                        const c = document.getElementById(id);
+                        if (c) c.classList.remove('selected');
+                    });
+
+                    // Set all cards to blue icons by default when clearing selection
+                    cardIds.forEach(id => {
+                        const c = document.getElementById(id);
+                        if (c) setCardIcon(c, false);
+                    });
+
+                    // Reset clicked icons state when changing selection
+                    this.viewer.annotationRenderer.clearExclamationIconStates();
+
+                    if (alreadySelected) {
+                        // Deselect -> hide details and clear selectedPPE
+                        this.selectedPPE = null;
+                        this.hideDetailedPPEInfo();
+                        // Redraw to remove filtered boxes
+                        await this.viewer.displayCurrentFrame();
+                        return;
+                    }
+
+                    // Mark clicked card as selected and persist choice
+                    card.classList.add('selected');
+                    // Switch this card's icon to colored
+                    setCardIcon(card, true);
+                    // Ensure other cards remain blue
+                    cardIds.forEach(id => { if (id !== cardId) { const c = document.getElementById(id); if (c) setCardIcon(c, false); } });
+                    const ppeLabelMap = {
+                        'maskCard': 'mask',
+                        'glovesCard': 'gloves',
+                        'eyewearCard': 'eyewear',
+                        'gownCard': 'gown'
+                    };
+                    this.selectedPPE = ppeLabelMap[cardId] || null;
+
+                    // Map cardId to PPE types expected in annotations
+                    const ppeMap = {
+                        'maskCard': ['ma', 'mi'],
+                        'glovesCard': ['ha'],
+                        'eyewearCard': ['ea', 'ei'],
+                        'gownCard': ['ga', 'gi']
+                    };
+
+                    const types = ppeMap[cardId] || [];
+
+                    // Get current frame annotations
+                    const boxes = this.viewer.annotationRenderer.getCurrentFrameAnnotations();
+
+                    // Filter persons that have any of the target non-compliance types
+                    const selectedPersons = boxes.filter(box => {
+                        if (!box.classTypes || !Array.isArray(box.classTypes)) return false;
+                        return box.classTypes.some(cls => types.includes(cls));
+                    });
+
+                    // If none found, show a friendly message
+                    if (!selectedPersons || selectedPersons.length === 0) {
+                        const ppeDetailsDisplay = document.getElementById('ppeDetailsDisplay');
+                        if (ppeDetailsDisplay) {
+                            ppeDetailsDisplay.innerHTML = `<div class="all-compliant-message">No non-compliance found for this PPE on the current frame.</div>`;
+                        }
+                        // Redraw so only selected PPE boxes (none) are shown
+                        await this.viewer.displayCurrentFrame();
+                        return;
+                    }
+
+                    // Update PPE details for the filtered persons
+                    this.updatePPEDetails(selectedPersons);
+
+                    // Redraw to show only selected PPE related boxes
+                    await this.viewer.displayCurrentFrame();
+                });
+            }
+        });
     }
 
     /**
