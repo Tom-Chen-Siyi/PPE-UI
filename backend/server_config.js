@@ -21,6 +21,25 @@ if (process.env.NODE_ENV === 'production') {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Detect available python executable (python3 preferred, fallback to python)
+const { spawnSync } = require('child_process');
+function findPythonCmd() {
+  const candidates = ['python3', 'python'];
+  for (const cmd of candidates) {
+    try {
+      const res = spawnSync(cmd, ['--version'], { stdio: 'ignore' });
+      if (res.status === 0) return cmd;
+    } catch (e) {
+      // ignore
+    }
+  }
+  return null;
+}
+const pythonCmd = findPythonCmd();
+if (!pythonCmd) {
+  console.warn('⚠️  Python not found in PATH. Frame extraction will fail until Python is installed and available as "python" or "python3".');
+}
+
 // 存储Python进程的实时进度信息
 const extractionProgress = new Map();
 
@@ -49,4 +68,5 @@ module.exports = {
   path,
   fs,
   ffmpeg
+  ,pythonCmd
 }; 

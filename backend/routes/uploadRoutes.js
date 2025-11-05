@@ -2,7 +2,7 @@
 // File upload related routes
 // ========================================
 
-const { app, upload, path, fs, extractionProgress } = require('../server_config');
+const { app, upload, path, fs, extractionProgress, pythonCmd } = require('../server_config');
 const { parsePythonOutput } = require('../utils/parsePythonOutput');
 
 // ========================================
@@ -34,9 +34,14 @@ app.post('/api/upload/video', upload.single('video'), async (req, res) => {
       output: ''
     });
     
+    // Check python availability
+    if (!pythonCmd) {
+      return res.status(500).json({ error: 'Python executable not found on server. Install Python and ensure it is on PATH.' });
+    }
+
     // Start Python frame extraction process
-    const python = require('child_process').spawn;
-    const pyProcess = python('python3', [
+    const spawn = require('child_process').spawn;
+    const pyProcess = spawn(pythonCmd, [
       path.join(__dirname, '..', 'get_frame.py'),
       videoPath,
       framesDir

@@ -2,7 +2,7 @@
 // Frame extraction and progress monitoring routes
 // ========================================
 
-const { app, path, fs, ffmpeg, extractionProgress } = require('../server_config');
+const { app, path, fs, ffmpeg, extractionProgress, pythonCmd } = require('../server_config');
 const { parsePythonOutput } = require('../utils/parsePythonOutput');
 
 // ========================================
@@ -189,9 +189,14 @@ app.post('/api/generate-frames', async (req, res) => {
       output: ''
     });
     
+    // Check python availability
+    if (!pythonCmd) {
+      return res.status(500).json({ error: 'Python executable not found on server. Install Python and ensure it is on PATH.' });
+    }
+
     // Start Python frame extraction process
-    const python = require('child_process').spawn;
-    const pyProcess = python('python3', [
+    const spawn = require('child_process').spawn;
+    const pyProcess = spawn(pythonCmd, [
       path.join(__dirname, '..', 'get_frame.py'),
       videoPath,
       framesDir
